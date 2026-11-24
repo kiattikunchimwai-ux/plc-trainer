@@ -79,10 +79,10 @@ def build_html() -> str:
          [("08_monitor.png", "100%")]),
         ("6", "เชื่อมต่อจาก PLC Trainer",
          """<ol><li>เปิดไอคอน <b>PLC Trainer</b> บน Desktop</li>
-         <li>ที่ Ribbon เลือกแหล่งเป็น <b>GX Simulator3 (SLMP)</b>, Host <code>127.0.0.1</code>, Port <code>5511</code></li>
+         <li>ที่แถบบน ช่อง PLC เลือก <b>GX Simulator3 (SLMP)</b> · ตั้ง Host <code>127.0.0.1</code>, Port <code>5511</code> ที่ปุ่ม ⚙</li>
          <li>กด <b>เชื่อมต่อ</b> ไฟ <b>ONLINE</b> ที่มุมขวาล่างต้องเป็นสีเขียว</li>
-         <li>บนผังอุปกรณ์ (แท็บ Panel) คลิกปุ่ม <b>Start (X0)</b> แล้วดูว่าหลอด Y0 ทั้งในโปรแกรมและใน GX Works3 ติดตามกัน</li>
-         <li>ถ้าจะจัดผังเอง กด <b>✎ แก้ไขผัง</b> แล้วลากอุปกรณ์จาก TOOL PALETTE มาวาง จากนั้นตั้ง Address ใน PROPERTIES ให้ตรงกับ ladder ของคุณ</li></ol>
+         <li>โปรแกรมเปิดเป็นหน้าเปล่า: กด <b>เปิด</b> เลือก <code>default.plcpanel</code> แล้วที่แท็บผังอุปกรณ์ คลิกปุ่ม <b>Start (X0)</b> แล้วดูว่าหลอด Y0 ทั้งในโปรแกรมและใน GX Works3 ติดตามกัน</li>
+         <li>ถ้าจะจัดผังเอง กด <b>✎ แก้ไขผัง</b> แล้วลากอุปกรณ์จากแผงอุปกรณ์มาวาง จากนั้นตั้ง Address ในแผงคุณสมบัติ ให้ตรงกับ ladder ของคุณ</li></ol>
          <div class="note">💡 iQ-R ใช้เลข X/Y ฐาน 16 ดังนั้นปุ่มที่ต่อกับ X8–XF ใช้ได้ (ช่อง Address จะเตือนถ้าพิมพ์เลขที่ไม่มีจริง)</div>""",
          [("09_trainer.png", "100%")]),
     ]

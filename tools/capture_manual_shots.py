@@ -43,6 +43,8 @@ w.set_large(False)
 w.resize(1500, 900)
 w.show()
 p = w.panel
+w._load_panel(TMP / "default.plcpanel")      # โปรแกรมเปิดเป็นหน้าเปล่า
+w.side_l.open("library")
 
 
 def rect_of(widget) -> QRect:
