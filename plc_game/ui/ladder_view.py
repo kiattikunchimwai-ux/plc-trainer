@@ -704,7 +704,7 @@ class LadderView(QWidget):
         B.addWidget(self.lbl_file, 1)
         btn(B, "import", tr("นำเข้า CSV"), tr("เปิด CSV ที่ Export จาก GX Works3 (แทนที่ ladder นี้ กด Ctrl+Z ย้อนได้)"),
             lambda: self.import_csv())
-        btn(B, "export", tr("ส่งออก CSV"), tr("บันทึก CSV ไปนำเข้าใน GX Works3: Edit → Import File\nยังไม่ได้ยืนยันการนำเข้ากับ GX Works3 จริง"),
+        btn(B, "export", tr("ส่งออก CSV"), tr("บันทึก CSV ไปนำเข้าใน GX Works3: Edit → Import File\nตรวจ ladder หลังนำเข้า (คำสั่งที่ PLC รุ่นนั้นไม่มีจะเป็น OUT SM4095)"),
             lambda: self.export_csv())
 
         self.area = QScrollArea()

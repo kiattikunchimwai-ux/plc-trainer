@@ -13,13 +13,13 @@
 ### th
 - เขียน ladder ในโปรแกรมได้เลย (แท็บ Ladder) แล้วรันด้วย PLC ในตัว ดูสถานะสด และตรวจด่านได้โดยไม่ต้องมี GX Works3
 - ตรวจ ladder ก่อนส่งลง PLC: บอก rung ที่ผิด ช่องที่ยังไม่ได้กรอก และคำสั่งที่ยังไม่รองรับ
-- บันทึก ladder อัตโนมัติแยกตามนักเรียนและด่าน, นำเข้า/ส่งออก CSV ของ GX Works3 (ยังไม่ได้ยืนยันการนำเข้าไฟล์ส่งออกกับ GX Works3 จริง)
+- บันทึก ladder อัตโนมัติแยกตามนักเรียนและด่าน, นำเข้า/ส่งออก CSV ของ GX Works3 (ลองนำเข้าไฟล์ส่งออกกับ GX Works3 จริงแล้ว: R04, FX5U)
 - AI อ่าน ladder จากไฟล์ CSV ของ GX Works3 แล้วชี้ step ที่น่าจะผิด (ไม่มีผลต่อคะแนน ปิดอัตโนมัติตอนสอบ)
 - ตัวตรวจด่าน: รอ PLC เห็น input จริงก่อนตัดสิน, ยกเลิกเมื่อข้อมูลขาดช่วง, โปรแกรมเปล่าไม่ได้ดาว, ล็อกการกดระหว่างตรวจ
 - เตือนสัญญาณอันตราย (เช่น หมุนหน้า-กลับพร้อมกัน) แม้ผ่านทุกข้อ
 - ผู้ใช้รุ่นเก่าได้ด่านที่แก้แล้วอัตโนมัติ ส่วนด่าน/ผังที่แก้เองจะไม่ถูกทับ
 - ตารางคะแนน, Excel และสรุปผลสอบบอกว่าตรวจกับ PLC ไหน (ดาวที่ได้จาก Mock PLC เท่านั้นมีเครื่องหมาย; ดาวไม่เปลี่ยน)
-- ladder: เพิ่มคำสั่ง BCD/BIN และ 32 บิต (DMOV, DINC, DDEC, D+ D- D* D/, DBCD, DBIN, เปรียบเทียบ LDD= ฯลฯ) และกลุ่มบิต K4X0/K4Y0; PLC ในตัวรัน CJ/JMP และโปรแกรมย่อย CALL/RET ได้ ทั้งตอนรันและตอน AI อ่าน CSV
+- ladder: เพิ่มคำสั่ง BCD/BIN และ 32 บิต (DMOV, DINC, DDEC, D+ D- D* D/, DBCD, DBIN, เปรียบเทียบ LDD= ฯลฯ) และกลุ่มบิต K4X0/K4Y0; PLC ในตัวรัน CJ/JMP (JMP เฉพาะ R04) และโปรแกรมย่อย CALL/RET ได้ ทั้งตอนรันและตอน AI อ่าน CSV
 - AI วิเคราะห์ ladder ด่าน 5–13 แม่นขึ้น (ค่า K, เครื่องหมายเปรียบเทียบ, D ต้นทาง, RST ที่ขาด) และไม่บอกว่ายืนยันแล้วเมื่อมีหลายจุดที่เป็นไปได้
 - ครู: แท็บและแผ่น Excel "ข้อที่พลาดบ่อย" + ข้อสังเกตจาก ladder ในแผ่นรายข้อ (ไม่มีผลต่อคะแนน)
 - บทเรียน ladder ทีละขั้น (ปุ่ม 🎓 ในแท็บ Ladder หรือ TUTORIAL LADDER)
@@ -28,13 +28,13 @@
 ### en
 - Draw ladder inside the app (Ladder tab), run it on the built-in PLC with live monitoring, and check levels without GX Works3
 - Ladder is checked before it is sent: points to the wrong rung, slots not filled in, and unsupported instructions
-- Ladder autosaves per student and level; import/export GX Works3 CSV (importing an exported file into real GX Works3 is not verified yet)
+- Ladder autosaves per student and level; import/export GX Works3 CSV (exported files were imported into real GX Works3: R04 and FX5U)
 - AI reads the ladder from a GX Works3 CSV and points to the likely wrong step (no effect on the score, off during exams)
 - Level checker: waits until the PLC really sees the input, aborts on data gaps, an empty program earns no stars, panel locked while checking
 - Warns about dangerous signals (e.g. forward and reverse together) even when every check passes
 - Existing users get the corrected levels automatically; levels/panels they edited are never overwritten
 - Score table, Excel and exam summary show which PLC was used (stars earned only on the Mock PLC are marked; stars are unchanged)
-- Ladder: added BCD/BIN and 32-bit instructions (DMOV, DINC, DDEC, D+ D- D* D/, DBCD, DBIN, LDD= comparisons, ...) and digit-specified bits (K4X0/K4Y0); the built-in PLC runs CJ/JMP and CALL/RET subroutines for running and for AI reading CSV
+- Ladder: added BCD/BIN and 32-bit instructions (DMOV, DINC, DDEC, D+ D- D* D/, DBCD, DBIN, LDD= comparisons, ...) and digit-specified bits (K4X0/K4Y0); the built-in PLC runs CJ/JMP (JMP on R04 only) and CALL/RET subroutines for running and for AI reading CSV
 - AI ladder analysis is more accurate on levels 5–13 (K values, comparison signs, source D, missing RST) and no longer claims confirmation when several spots are possible
 - Teachers: a "Common mistakes" tab and Excel sheet, plus ladder notes in the per-item sheet (no effect on score)
 - Step-by-step ladder lesson (🎓 button in the Ladder tab, or TUTORIAL LADDER)

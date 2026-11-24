@@ -199,10 +199,10 @@ def build_html() -> str:
          ["Alt+↑↓ · ;", "ย้าย rung · ใส่คอมเมนต์"],
          ["Ctrl+Z / Y / C / X / V", "ย้อนกลับ / ทำซ้ำ / คัดลอก / ตัด / วาง rung"]], "compact")
         + img("11_ladder_problem.png", "88%", "มีช่อง ? ที่ยังไม่ได้กรอก — คลิกข้อความในผลตรวจ ladder เพื่อไปที่ rung") + """
-<ul><li><b>คำสั่งที่รองรับ:</b> หน้าสัมผัสทุกแบบ, เปรียบเทียบ 16/32 บิต (เช่น LDD>=), OUT/SET/RST/PLS/PLF/FF, T/C/ST, MOV/FMOV/BMOV, INC/DEC, + − × ÷, BCD/BIN, 32 บิต DMOV/DINC/DDEC/D+ D- D* D/ /DBCD/DBIN (ใช้ D, W, SD 2 ตัวติดกัน), กลุ่มบิต K1–K8 เช่น BIN K4X0 D0, CJ/CJP/JMP, CALL/CALLP + ป้าย P0, FEND, RET/SRET (AI ยังไม่วิเคราะห์ ladder ที่กระโดด), MC/MCR, INV/MEP/MEF (คำสั่งอื่นจะไม่ให้ RUN)</li>
+<ul><li><b>คำสั่งที่รองรับ:</b> หน้าสัมผัสทุกแบบ, เปรียบเทียบ 16/32 บิต (เช่น LDD>=), OUT/SET/RST/PLS/PLF/FF, T/C/ST, MOV/FMOV/BMOV, INC/DEC, + − × ÷, BCD/BIN, 32 บิต DMOV/DINC/DDEC/D+ D- D* D/ /DBCD/DBIN (ใช้ D, W, SD 2 ตัวติดกัน), กลุ่มบิต K1–K8 เช่น BIN K4X0 D0, CJ/CJP/JMP (JMP เฉพาะ R04), CALL/CALLP + ป้าย P0, FEND, RET/SRET (AI ยังไม่วิเคราะห์ ladder ที่กระโดด), MC/MCR, INV/MEP/MEF (คำสั่งอื่นจะไม่ให้ RUN)</li>
 <li><b>RUN / STOP / RESET</b> — STOP: Y ดับหมด · RESET: ล้าง M/T/C/D และข้อผิดพลาด แล้วหยุด</li>
 <li><b>บันทึกอัตโนมัติ</b> แยกตามนักเรียนและด่าน · โหมดสอบเริ่มจาก ladder ว่าง และปิดการนำเข้า/ส่งออก</li></ul>
-<div class="warn">⚠️ <b>ส่งออก CSV</b> ทำไว้สำหรับ GX Works3 แต่ยังไม่ได้ยืนยันการนำเข้ากับ GX Works3 จริง — ตรวจ ladder อีกครั้งหลังนำเข้า</div>"""))
+<div class="note"><b>ส่งออก CSV</b> นำเข้าใน GX Works3 ได้ (ลองแล้วกับ R04 และ FX5U): Edit → Import File — คำสั่งที่ PLC รุ่นนั้นไม่มีจะกลายเป็น OUT SM4095 ให้ตรวจ ladder หลังนำเข้า</div>"""))
 
     parts.append(sec("13", "ให้ AI อ่าน ladder (CSV)", """
 <p>ไม่บังคับ — ช่วยให้ AI ชี้ step ที่น่าจะผิด <b>คะแนนยังมาจาก I/O เท่านั้น</b> และปิดอัตโนมัติในโหมดสอบ</p>

@@ -59,6 +59,8 @@ def check(L: Ladder) -> list[Problem]:
                 bad(k, tr("{0} ต้องอยู่ต้น rung (วงจรก่อนหน้ายังไม่จบ)", ins.text))
             if mcs:
                 bad(k, tr("ใช้ {0} ระหว่าง MC กับ MCR ไม่ได้", ins.text))
+            if op == "JMP" and L.app_base == 8:          # ยืนยันกับ GX Works3: FX5U ไม่รับ JMP
+                bad(k, tr("FX5 ไม่มีคำสั่ง JMP — ใช้ LD SM400 แล้วตามด้วย CJ {0} แทน", ins.args[0] if ins.args else "P0"))
             if len(ins.args) != (op == "JMP"):
                 bad(k, tr("operand ของ {0} ไม่ถูกต้อง", ins.text))
             depth, prev_out = 0, True

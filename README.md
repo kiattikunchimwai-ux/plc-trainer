@@ -88,9 +88,9 @@ python -m venv .venv
 | Ctrl+Z / Y / C / X / V | ย้อนกลับ / ทำซ้ำ / คัดลอก / ตัด / วาง rung |
 | `;` | คอมเมนต์ของ rung |
 
-- **คำสั่งที่รองรับ:** หน้าสัมผัสทุกแบบ, เปรียบเทียบ 16/32 บิต (เช่น LDD>=), OUT/SET/RST/PLS/PLF/FF, T/C/ST, MOV/FMOV/BMOV, INC/DEC, + − × ÷, BCD/BIN, 32 บิต DMOV/DINC/DDEC/D+ D- D* D/ /DBCD/DBIN (ใช้ D, W, SD 2 ตัวติดกัน), กลุ่มบิต K1–K8 เช่น BIN K4X0 D0, CJ/CJP/JMP, CALL/CALLP + ป้าย P0, FEND, RET/SRET (AI ยังไม่วิเคราะห์ ladder ที่กระโดด), MC/MCR, INV/MEP/MEF (คำสั่งอื่นเก็บไว้ได้แต่ไม่ให้ RUN)
+- **คำสั่งที่รองรับ:** หน้าสัมผัสทุกแบบ, เปรียบเทียบ 16/32 บิต (เช่น LDD>=), OUT/SET/RST/PLS/PLF/FF, T/C/ST, MOV/FMOV/BMOV, INC/DEC, + − × ÷, BCD/BIN, 32 บิต DMOV/DINC/DDEC/D+ D- D* D/ /DBCD/DBIN (ใช้ D, W, SD 2 ตัวติดกัน), กลุ่มบิต K1–K8 เช่น BIN K4X0 D0, CJ/CJP/JMP (JMP เฉพาะ R04), CALL/CALLP + ป้าย P0, FEND, RET/SRET (AI ยังไม่วิเคราะห์ ladder ที่กระโดด), MC/MCR, INV/MEP/MEF (คำสั่งอื่นเก็บไว้ได้แต่ไม่ให้ RUN)
 - **บันทึกอัตโนมัติ** ที่ `panels/ladders/<นักเรียน>/<ด่าน>.csv` · โหมดสอบเริ่มจาก ladder ว่าง และปิดการนำเข้า/ส่งออก
-- **นำเข้า/ส่งออก CSV** ของ GX Works3 ได้ แต่ยังไม่ได้ยืนยันการนำเข้าไฟล์ที่โปรแกรมส่งออกกับ GX Works3 จริง
+- **นำเข้า/ส่งออก CSV** ของ GX Works3 ได้ (ลองนำเข้าไฟล์ที่ส่งออกกับ GX Works3 จริงแล้วทั้ง R04 และ FX5U — คำสั่งที่รุ่นนั้นไม่มี GX จะแปลงเป็น OUT SM4095)
 
 ## หลักการออกแบบ
 **ตรวจคำตอบจากผลลัพธ์ ไม่ใช่จากรูปแบบโค้ด** นักเรียนจะเขียน ladder แบบไหนก็ได้ ระบบตรวจด่าน (Phase 2) จะป้อน Input แล้วดูว่า Output/Timer/Counter ทำงานถูกต้องตามโจทย์หรือไม่
