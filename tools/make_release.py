@@ -162,7 +162,7 @@ def render_site(text: str, repo: str, version: str, size: int) -> str:
 
 
 def write_site(dst: Path, repo: str, version: str, size: int, src: Path = SITE) -> None:
-    """คัดเว็บไป release/repo/ (index.html + img/) — GitHub Pages เปิดจาก root ของ repo."""
+    """คัดเว็บไป release/repo/ (index.html + img/) — GitHub Pages เปิดจาก root ของ branch gh-pages."""
     dst.mkdir(parents=True, exist_ok=True)
     (dst / "index.html").write_text(render_site((src / "index.html").read_text(encoding="utf-8"), repo, version, size),
                                     encoding="utf-8")

@@ -9,8 +9,10 @@ $gh="C:\Program Files\GitHub CLI\gh.exe"; $v="release\v<ver>"
 .venv\Scripts\python.exe tools\make_release.py --check
 ```
 
-ทำผ่านหน้าเว็บ GitHub ได้ทั้งหมด ไม่ต้องลง git · ซอร์สโค้ดยังอยู่ในเครื่องนี้เท่านั้น
-repo สาธารณะมีแค่ README + ไฟล์แจก (zip) ส่วนโปรแกรมเช็กเวอร์ชันใหม่จากลิงก์คงที่
+**repo เดียว สาธารณะ (ตั้งแต่ 2026-11-24):** `main` = ซอร์ส (ไม่มีเฉลยด่าน ดู `.gitignore`) · `gh-pages` = เว็บ · Releases = ไฟล์แจก
+อย่าเอาไฟล์ใน `release/repo` ไปลง `main` (ทับ README ของซอร์ส) · commit/push ซอร์สของรุ่นนั้นก่อนสร้าง release
+
+โปรแกรมเช็กเวอร์ชันใหม่จากลิงก์คงที่
 `https://github.com/<owner>/<repo>/releases/latest/download/version.json`
 
 ## ครั้งแรก (ทำครั้งเดียว)
@@ -22,7 +24,7 @@ repo สาธารณะมีแค่ README + ไฟล์แจก (zip) �
    ```
    โปรแกรมจะเขียน `update_url` ลง `plc_game\config.yaml`, build .exe ใหม่ (ประมาณ 2–3 นาที)
    แล้ววางไฟล์ไว้ที่ `release\v<เวอร์ชัน>\` และ `release\repo\README.md`
-3. หน้า repo → เปิดไฟล์ `README.md` → ✏ (Edit) → วางเนื้อหาจาก `release\repo\README.md` → **Commit changes**
+3. สร้าง branch `gh-pages` สำหรับเว็บ (ไฟล์ทั้งหมดใน `release/repo` ใช้กับ branch นี้)
 4. ทำขั้น "ปล่อยแต่ละเวอร์ชัน" ข้อ 3–5 ด้านล่าง
 
 ## ปล่อยแต่ละเวอร์ชัน
@@ -42,10 +44,10 @@ repo สาธารณะมีแค่ README + ไฟล์แจก (zip) �
 ## เว็บของโปรแกรม (GitHub Pages — ฟรี)
 แม่แบบอยู่ที่ `site\index.html` + `site\img\` (ธีมเดียวกับโปรแกรม สองภาษา) — `make_release.py` เติมชื่อ repo/เวอร์ชัน/ขนาด
 แล้ววางไว้ที่ `release\repo\index.html` + `release\repo\img\`
-1. ครั้งแรก: หน้า repo → **Add file → Upload files** → ลาก `index.html` และโฟลเดอร์ `img` จาก `release\repo\` → Commit
-2. **Settings → Pages** → Source: *Deploy from a branch* → Branch: `main` / `(root)` → Save
+1. ครั้งแรก: หน้า repo → เลือก branch `gh-pages` → **Add file → Upload files** → ลาก `index.html` และโฟลเดอร์ `img` จาก `release\repo\` → Commit
+2. **Settings → Pages** → Source: *Deploy from a branch* → Branch: `gh-pages` / `(root)` → Save
 3. รอ 1–2 นาที เว็บจะอยู่ที่ `https://<owner>.github.io/<repo>/`
-4. ทุกครั้งที่ปล่อยเวอร์ชันใหม่ อัปโหลด `index.html` ที่สร้างใหม่ทับ (เลขเวอร์ชัน/ขนาดในหน้าเว็บจะได้ตรง)
+4. ทุกครั้งที่ปล่อยเวอร์ชันใหม่ อัปโหลด `index.html` ที่สร้างใหม่ทับใน `gh-pages` (`gh_upload_site.py` ทำให้ · เลขเวอร์ชัน/ขนาดในหน้าเว็บจะได้ตรง)
 
 **ชื่อโดเมนของตัวเอง (ไม่บังคับ):** ซื้อโดเมน เช่น `.com` (ประมาณ 400–600 บาท/ปี) → Settings → Pages → Custom domain
 ใส่ชื่อโดเมน → ที่ผู้ขายโดเมนตั้ง DNS ตามที่ GitHub บอก (CNAME ไปที่ `<owner>.github.io`) → ติ๊ก *Enforce HTTPS*

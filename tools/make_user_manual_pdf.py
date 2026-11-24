@@ -142,6 +142,8 @@ def build_html() -> str:
          ["<code>ZOOM</code>", "ดูทั้งผัง"],
          ["<code>PAUSE</code> / <code>RESUME</code> / <code>CLEAR</code>", "หยุด / เล่นต่อ / ล้างกราฟ"],
          ["<code>WINDOW 20</code>", "ตั้งช่วงเวลาที่แสดงบนกราฟ (วินาที)"],
+         ["<code>TUTORIAL</code> / <code>TUTORIAL LADDER</code>", "บทเรียนนำทาง / บทเรียนเขียน ladder"],
+         ["<code>LOGIN</code> / <code>SCORES</code>", "ลงชื่อนักเรียน / ตารางคะแนนทั้งห้อง"],
          ["<code>HELP</code>", "แสดงคำสั่งทั้งหมด"]], "compact")))
 
     parts.append(sec("10", "คีย์ลัดทั้งหมด", table(
@@ -178,7 +180,7 @@ def build_html() -> str:
 <li>ถ้า PLC ไม่ยอมให้เขียน X จากภายนอก ให้ตั้งปุ่มเป็น <b>M</b> แทน (เช่น M100) แล้วใช้ M นั้นใน ladder</li></ul>"""))
 
     parts.append('<div style="page-break-before:always"></div>' + sec("12", "เขียน ladder ในโปรแกรม (PLC ในตัว)",
-        "<p>ใช้ฝึกได้โดย<b>ไม่ต้องมี GX Works3</b> — วาด รัน และตรวจด่านในโปรแกรมเดียว</p>"
+        "<p>ใช้ฝึกได้โดย<b>ไม่ต้องมี GX Works3</b> — วาด รัน และตรวจด่านในโปรแกรมเดียว · เพิ่งเริ่ม: กด <b>🎓</b> ในแท็บ Ladder เพื่อทำบทเรียนทีละขั้น</p>"
         + img("10_ladder.png", "100%", "แท็บ Ladder ขณะ RUN — สีเขียว = ไฟผ่าน (วงจรตัวอย่าง ไม่ใช่คำตอบของด่าน)") + """
 <ol><li>แถบบน ช่อง <b>PLC</b> เลือก <b>PLC ในตัว (รัน ladder)</b> → <b>⏻ เชื่อมต่อ</b></li>
 <li>เปิดด่านหรือผัง → แท็บ <b>Ladder</b> (หรือพิมพ์ <code>DRAW</code>)</li>
@@ -208,6 +210,12 @@ def build_html() -> str:
 <li>PLC Trainer: เปิดด่าน → <b>📄 เลือก CSV ladder</b> → <b>▶ ตรวจคำตอบ</b></li>
 <li>แก้ ladder แล้ว: Write ลง PLC และ Export ทับไฟล์เดิม — โปรแกรมอ่านใหม่ให้เอง</li></ol>
 <div class="note">ถ้าขึ้นว่า "ไฟล์ CSV ไม่ตรงกับโปรแกรมที่รันอยู่ใน PLC" ให้ Export ใหม่และ Write ลง PLC ก่อนตรวจอีกครั้ง</div>"""))
+
+    parts.append(sec("14", "รายงานสำหรับครู", """
+<ul><li>เปิดตารางคะแนน (พิมพ์ <code>SCORES</code>) → แท็บ <b>ข้อที่พลาดบ่อย</b>: จำนวนคนที่พลาด ร้อยละ และรหัสนักเรียน
+(นับจากการตรวจครั้งล่าสุดของแต่ละคน ไม่รวม guest และข้อที่ถูกข้าม)</li>
+<li><b>📊 Export Excel</b> ได้ 3 แผ่น: สรุป · รายข้อ · ข้อที่พลาดบ่อย</li>
+<li>แผ่น <b>รายข้อ</b> มี <b>ข้อสังเกตจาก ladder</b> ของการตรวจครั้งล่าสุด (ถ้ามี) — ช่วยครูอธิบายเท่านั้น ไม่มีผลต่อคะแนน</li></ul>"""))
 
     parts.append(sec("?", "แก้ปัญหาที่พบบ่อย", table(
         ["อาการ", "สาเหตุ / วิธีแก้"],
@@ -261,7 +269,7 @@ table.compact td:first-child {{ white-space: nowrap; }}
 <div class="toc">
 <div>1. เปิดโปรแกรม</div><div>2. ส่วนประกอบของหน้าจอ</div><div>3. เชื่อมต่อ PLC</div><div>4. ใช้งานผัง</div>
 <div>5. จัดผังเอง</div><div>6. บันทึกและเปิดผัง</div><div>7. กราฟ</div><div>8. แบ่งจอ / ตัวใหญ่</div>
-<div>9. คำสั่ง</div><div>10. คีย์ลัด</div><div>11. การตั้งค่า</div><div>12. เขียน ladder ในโปรแกรม</div><div>13. AI อ่าน ladder</div><div>?. แก้ปัญหา</div></div>
+<div>9. คำสั่ง</div><div>10. คีย์ลัด</div><div>11. การตั้งค่า</div><div>12. เขียน ladder ในโปรแกรม</div><div>13. AI อ่าน ladder</div><div>14. รายงานครู</div><div>?. แก้ปัญหา</div></div>
 {body}
 </body></html>"""
 
