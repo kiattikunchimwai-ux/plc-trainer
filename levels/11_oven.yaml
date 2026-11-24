@@ -1,0 +1,66 @@
+id: 11_oven
+order: 11
+title: "ด่าน 11: เตาอบคุมอุณหภูมิ (Hysteresis)"
+title_en: "Level 11: Oven temperature control (hysteresis)"
+panel: 11_oven.plcpanel
+desc: |
+  เปิด Auto (X0) → คุมอุณหภูมิเตา (D0) ให้อยู่ระหว่าง 180–200 °C
+  ฮีตเตอร์ (Y0) เปิดเมื่อ D0 ≤ 180 และปิดเมื่อ D0 ≥ 200
+  ระหว่าง 180–200 ต้องคงสถานะเดิม (ร้อนขึ้น → เปิดต่อจนถึง 200, เย็นลง → ปิดต่อจนถึง 180)
+  ปิด Auto → ฮีตเตอร์ดับทันที
+desc_en: |
+  Auto on (X0) → keep the oven temperature (D0) between 180–200 °C
+  Heater (Y0) on when D0 ≤ 180 and off when D0 ≥ 200
+  Between 180–200 keep the previous state (heating → stay on until 200, cooling → stay off until 180)
+  Auto off → heater off immediately
+idle: {X0: 0}
+settle: 1.0
+cases:
+  - name: อุ่นเตาและคุมอุณหภูมิ
+    name_en: "Preheat and regulate"
+    steps:
+      - set X0 1
+      - do: expect Y0 = 1 within 0.5
+        msg: เปิด Auto (เตา 120 °C) → ฮีตเตอร์ทำงาน
+        msg_en: "Auto on (oven at 120 °C) → heater on"
+      - do: hold Y0 = 1 for 3
+        msg: ยังไม่ถึง 200 °C ฮีตเตอร์ต้องเปิดค้าง
+        msg_en: "Below 200 °C the heater must stay on"
+      - do: expect D0 >= 198 within 9
+        msg: อุณหภูมิขึ้นไปถึงประมาณ 200 °C
+        msg_en: "Temperature rises to about 200 °C"
+        hint: ฮีตเตอร์ต้องเปิดค้างจนถึง 200 °C — ถ้าตัดที่ค่ากลาง (เช่น 190) จะขึ้นไม่ถึง
+        hint_en: "The heater must stay on until 200 °C — cutting at a midpoint (e.g. 190) never gets there"
+      - do: expect Y0 = 0 within 0.5
+        msg: ถึง 200 °C → ปิดฮีตเตอร์
+        msg_en: "200 °C → heater off"
+        hint: "SET Y0 เมื่อ [<= D0 K180] และ RST Y0 เมื่อ [>= D0 K200]"
+        hint_en: "SET Y0 when [<= D0 K180] and RST Y0 when [>= D0 K200]"
+      - do: hold Y0 = 0 for 2.5
+        msg: ตอนเย็นลงจาก 200 ยังไม่ถึง 180 ฮีตเตอร์ต้องปิดค้าง (ไม่เปิด-ปิดถี่)
+        msg_en: "Cooling from 200 but above 180, the heater must stay off (no rapid switching)"
+        hint: Hysteresis ใช้ 2 ค่า (เปิดที่ 180, ปิดที่ 200) ไม่ใช่ค่าเดียว — ใช้ SET/RST แทน OUT
+        hint_en: "Hysteresis uses 2 thresholds (on at 180, off at 200), not one — use SET/RST instead of OUT"
+      - do: expect Y0 = 1 within 3
+        msg: เย็นลงถึง 180 °C → เปิดฮีตเตอร์อีกครั้ง
+        msg_en: "Cools to 180 °C → heater on again"
+      - do: hold D0 >= 175 and D0 <= 205 for 8
+        msg: อุณหภูมิอยู่ในช่วง 180–200 °C ต่อเนื่อง
+        msg_en: "Temperature stays within 180–200 °C"
+  - name: ปิด Auto
+    name_en: "Auto off"
+    steps:
+      - set X0 1
+      - wait 0.3
+      - waitfor Y0 = 0 within 9
+      - do: expect Y0 = 1 within 8
+        msg: "ก่อนปิด Auto ฮีตเตอร์ต้องเคยทำงาน"
+        msg_en: "Before Auto off, the heater must come on"
+      - wait 0.5
+      - set X0 0
+      - do: expect Y0 = 0 within 0.5
+        msg: ปิด Auto → ฮีตเตอร์ดับทันที
+        msg_en: "Auto off → heater off immediately"
+      - do: hold Y0 = 0 for 2
+        msg: ฮีตเตอร์ต้องดับค้างแม้อุณหภูมิลดลง
+        msg_en: "The heater must stay off even as the temperature drops"

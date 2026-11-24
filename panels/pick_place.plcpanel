@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "name": "แขนหยิบ-วาง + สายพาน",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": -120,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "d8be4af4"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": -120,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "829ccdb9"
+    },
+    {
+      "kind": "tower",
+      "x": 620,
+      "y": -100,
+      "props": {
+        "label": "สถานะ",
+        "address": "Y5",
+        "addr_yellow": "Y6",
+        "addr_green": "Y7",
+        "addr_buzzer": ""
+      },
+      "id": "8a320af4"
+    },
+    {
+      "kind": "conveyor",
+      "x": 150,
+      "y": 190,
+      "props": {
+        "label": "สายพานป้อน",
+        "address": "Y0",
+        "length": 400,
+        "speed": 120,
+        "part_mode": "random",
+        "addr_hz": ""
+      },
+      "id": "bb4ea86f"
+    },
+    {
+      "kind": "sensor",
+      "x": 325,
+      "y": 110,
+      "props": {
+        "label": "PS ถึงจุดหยิบ",
+        "address": "X2",
+        "contact": "NO",
+        "sense": "photo",
+        "range_mm": 60
+      },
+      "id": "1fb01c6d"
+    },
+    {
+      "kind": "pick_place",
+      "x": 420,
+      "y": 120,
+      "props": {
+        "label": "แขนหยิบ",
+        "address": "Y1",
+        "addr_right": "Y2",
+        "addr_grip": "Y3",
+        "addr_up": "X3",
+        "addr_down": "X4",
+        "addr_left": "X5",
+        "addr_rightlim": "X6",
+        "addr_gripped": "X7",
+        "feed": "conveyor"
+      },
+      "id": "daebb19e"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 620,
+      "y": 120,
+      "props": {
+        "label": "วางแล้ว (C0)",
+        "address": "CN0",
+        "digits": 3
+      },
+      "id": "05b64a09"
+    },
+    {
+      "kind": "note",
+      "x": 900,
+      "y": 60,
+      "props": {
+        "label": "",
+        "text": "โจทย์: Start → สายพานเดินจนชิ้นงานถึงจุดหยิบ (X2) แล้วหยุดสายพาน\nแขน: Z ลง → หนีบ (รอ 0.3 s) → Z ขึ้น → X ไปขวา → Z ลง → ปล่อย → Z ขึ้น → X กลับ\nแล้วเดินสายพานรับชิ้นต่อไป · นับชิ้นที่วางด้วย C0\n⚠ ห้ามเลื่อนแกน X ขณะแกน Z ยังไม่ขึ้นสุด (X3) — จะชน!\n\nX0 Start · X1 Stop · X2 ชิ้นงานถึงจุดหยิบ\nX3 Z บนสุด · X4 Z ล่างสุด · X5 X ต้นทาง · X6 X ปลายทาง · X7 จับแล้ว\nY0 สายพาน · Y1 Z ลง · Y2 X ไปขวา · Y3 หัวจับ\nY5 แดง · Y6 เหลือง · Y7 เขียว",
+        "size": 9,
+        "width": 360,
+        "color": "yellow"
+      },
+      "id": "7cadf22e"
+    }
+  ]
+}

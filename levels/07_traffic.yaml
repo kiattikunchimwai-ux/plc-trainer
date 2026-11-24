@@ -1,0 +1,77 @@
+id: 07_traffic
+order: 7
+title: "ด่าน 7: ไฟจราจร + ปุ่มคนข้าม"
+title_en: "Level 7: Traffic light + pedestrian button"
+panel: 07_traffic.plcpanel
+desc: |
+  ปกติไฟรถเขียว (Y2) ค้าง และไฟคนข้าม "หยุด" (Y3) ติด
+  กดปุ่มขอข้าม (X0) → ไฟรถเหลือง (Y1) 3 วินาที → ไฟรถแดง (Y0) พร้อมไฟคนข้าม "เดิน" (Y4)
+  ไฟคนเดินติดนานเท่ากับค่าใน D10 (วินาที) และนับถอยหลังที่ D0 → แล้วกลับเป็นไฟรถเขียว
+  ไฟรถต้องติดทีละดวงเสมอ
+desc_en: |
+  Normally the car light is green (Y2) and the pedestrian "wait" lamp (Y3) is on
+  Press the crossing button (X0) → car yellow (Y1) for 3 s → car red (Y0) with pedestrian "walk" (Y4)
+  Walk stays on for the time in D10 (seconds) with a countdown in D0 → then back to car green
+  Only one car lamp may be on at a time
+idle: {X0: 0}
+reset:
+  - waitfor Y2 = 1 and Y4 = 0 within 15
+cases:
+  - name: ไฟรถเขียวค้างจนกว่าจะมีคนกดขอข้าม
+    name_en: "Car green until someone presses the button"
+    steps:
+      - word D10 5
+      - do: hold Y2 = 1 and Y1 = 0 and Y0 = 0 for 2
+        msg: ถ้าไม่มีคนกด ไฟรถต้องเขียวค้าง (เหลือง/แดงดับ)
+        msg_en: "With no request the car light stays green (yellow/red off)"
+      - do: hold Y3 = 1 and Y4 = 0 for 0.5
+        msg: ไฟคนข้ามแสดง "หยุด" (Y3) ระหว่างรถวิ่ง
+        msg_en: "Pedestrian light shows \"wait\" (Y3) while cars go"
+  - name: กดขอข้าม
+    name_en: "Request to cross"
+    steps:
+      - word D10 5
+      - pulse X0 0.3
+      - do: expect Y1 = 1 and Y2 = 0 and Y0 = 0 within 1
+        msg: กดขอข้าม → ไฟรถเปลี่ยนเป็นเหลือง (ดวงเดียว)
+        msg_en: "Press the button → car light turns yellow (only)"
+        hint: "ใช้ X0 SET สถานะ 'ขอข้าม' หรือขึ้นขั้นที่ 1 ของลำดับ แล้วให้ Timer จับเวลาไฟเหลือง"
+        hint_en: "Use X0 to SET a 'request' bit or step 1 of the sequence, then time the yellow with a timer"
+      - do: hold Y1 = 1 and Y0 = 0 and Y2 = 0 for 2.4
+        msg: ไฟเหลืองค้างประมาณ 3 วินาที
+        msg_en: "Yellow stays on for about 3 s"
+        hint: "Timer หน่วยละ 100 ms: 3 วินาที = K30"
+        hint_en: "100 ms timer: 3 seconds = K30"
+      - do: expect Y0 = 1 and Y1 = 0 and Y2 = 0 within 1.2
+        msg: ครบ 3 วินาที → ไฟรถแดง (ดวงเดียว)
+        msg_en: "After 3 s → car light red (only)"
+      - do: expect Y4 = 1 and Y3 = 0 within 0.5
+        msg: ไฟรถแดง → ไฟคนข้าม "เดิน" (Y4) ติด และ "หยุด" (Y3) ดับ
+        msg_en: "Car red → pedestrian \"walk\" (Y4) on and \"wait\" (Y3) off"
+      - do: expect D0 >= 4 within 0.5
+        msg: เริ่มนับถอยหลังที่ D0 จากค่าใน D10 (5 วินาที)
+        msg_en: "Countdown in D0 starts from the value in D10 (5 s)"
+        hint: "เช่น D0 = D10 − (ค่าปัจจุบันของ Timer ÷ 10) หรือ MOV D10 D0 แล้วลด 1 ทุกวินาที"
+        hint_en: "e.g. D0 = D10 − (timer current value ÷ 10), or MOV D10 D0 and decrement every second"
+      - do: hold Y0 = 1 and Y4 = 1 and Y2 = 0 for 3.5
+        msg: ไฟคนเดินติดตามเวลาใน D10
+        msg_en: "Walk stays on for the time in D10"
+        hint: "ใช้ Timer ที่ตั้งค่าด้วย D10 (ต้องคูณ 10 ถ้า Timer หน่วย 100 ms)"
+        hint_en: "Use a timer preset from D10 (multiply by 10 for a 100 ms timer)"
+      - do: expect Y2 = 1 and Y0 = 0 and Y4 = 0 and Y3 = 1 within 2.5
+        msg: หมดเวลาคนข้าม → กลับเป็นไฟรถเขียว และคนข้าม "หยุด"
+        msg_en: "Crossing time over → back to car green and pedestrian \"wait\""
+  - name: เปลี่ยนเวลาคนข้ามใน D10 เป็น 2 วินาที
+    name_en: "Change the crossing time in D10 to 2 s"
+    steps:
+      - word D10 2
+      - pulse X0 0.3
+      - waitfor Y4 = 1 within 6
+      - do: hold Y4 = 1 and Y0 = 1 for 1.4
+        msg: ไฟคนเดินติดอย่างน้อยเกือบ 2 วินาที
+        msg_en: "Walk stays on for nearly 2 s"
+      - do: expect Y4 = 0 and Y2 = 1 within 1.6
+        msg: ครบ 2 วินาที (ค่าใหม่ใน D10) → กลับเป็นไฟรถเขียว
+        msg_en: "After 2 s (new D10 value) → back to car green"
+        hint: เวลาคนข้ามต้องอ่านจาก D10 ทุกครั้ง ไม่ใช่ตั้งค่าคงที่ (K) ไว้ในโปรแกรม
+        hint_en: "The crossing time must be read from D10 each time, not a constant (K) in the program"

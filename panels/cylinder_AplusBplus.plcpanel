@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "name": "ลำดับกระบอกสูบ A+ B+ A− B−",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "bbf47b3c"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 100,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "7a30993e"
+    },
+    {
+      "kind": "lamp",
+      "x": 220,
+      "y": 0,
+      "props": {
+        "label": "RUN",
+        "address": "M0",
+        "color": "green"
+      },
+      "id": "c32ba2e7"
+    },
+    {
+      "kind": "cylinder",
+      "x": 60,
+      "y": 160,
+      "props": {
+        "label": "กระบอกสูบ A",
+        "address": "Y0",
+        "addr_sol_b": "",
+        "addr_ret": "X2",
+        "addr_ext": "X3",
+        "valve": "single",
+        "stroke_s": 1.0
+      },
+      "id": "bb3874a2"
+    },
+    {
+      "kind": "cylinder",
+      "x": 60,
+      "y": 300,
+      "props": {
+        "label": "กระบอกสูบ B",
+        "address": "Y1",
+        "addr_sol_b": "",
+        "addr_ret": "X4",
+        "addr_ext": "X5",
+        "valve": "single",
+        "stroke_s": 1.0
+      },
+      "id": "04398d93"
+    },
+    {
+      "kind": "note",
+      "x": 480,
+      "y": 150,
+      "props": {
+        "label": "",
+        "text": "โจทย์: กด Start → A ยื่น (A+) → B ยื่น (B+) → A หด (A−) → B หด (B−) แล้วจบรอบ\nใช้รีดสวิตช์ a0 / a1 ยืนยันตำแหน่งก่อนขั้นถัดไป\n\nX0 Start · X1 Stop\nX2 a0 / X3 a1 (กระบอก A)\nX4 b0 / X5 b1 (กระบอก B)\nY0 โซลินอยด์ A · Y1 โซลินอยด์ B",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "0a5bd145"
+    }
+  ]
+}

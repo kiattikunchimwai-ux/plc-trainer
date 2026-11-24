@@ -1,0 +1,102 @@
+id: 12_parking
+order: 12
+title: "ด่าน 12: ลานจอดรถ"
+title_en: "Level 12: Car park"
+panel: 12_parking.plcpanel
+desc: |
+  ปุ่มรีเซ็ต (X2) → จำนวนช่องว่าง D0 = ค่าใน D10 (จำนวนช่องจอด)
+  รถเข้า 1 คัน (X0) → D0 ลด 1 · รถออก 1 คัน (X1) → D0 เพิ่ม 1
+  D0 = 0 → ไฟเต็ม (Y1) · ยังมีที่ว่าง → ไฟว่าง (Y0)
+  D0 ต้องไม่ติดลบ และไม่เกินจำนวนช่องจอด
+desc_en: |
+  Reset button (X2) → free spaces D0 = value in D10 (number of spaces)
+  A car enters (X0) → D0 −1 · a car leaves (X1) → D0 +1
+  D0 = 0 → FULL lamp (Y1) · spaces left → VACANT lamp (Y0)
+  D0 must never go negative or above the number of spaces
+idle: {X0: 0, X1: 0, X2: 0}
+reset:
+  - word D10 3
+  - pulse X2 0.3
+cases:
+  - name: รีเซ็ตจำนวนช่องว่าง
+    name_en: "Reset free spaces"
+    steps:
+      - do: expect D0 = 3 within 0.5
+        msg: รีเซ็ต → D0 = ค่าใน D10 (3 ช่อง)
+        msg_en: "Reset → D0 = value in D10 (3 spaces)"
+        hint: "X2 → MOV D10 D0"
+        hint_en: "X2 → MOV D10 D0"
+      - do: expect Y0 = 1 and Y1 = 0 within 0.5
+        msg: มีที่ว่าง → ไฟว่าง (Y0) ติด ไฟเต็ม (Y1) ดับ
+        msg_en: "Spaces left → VACANT (Y0) on, FULL (Y1) off"
+  - name: รถเข้าจนเต็ม
+    name_en: "Cars fill the park"
+    steps:
+      - pulse X0 0.3
+      - do: expect D0 = 2 within 0.5
+        msg: รถเข้า 1 คัน → ช่องว่างลดเหลือ 2
+        msg_en: "One car enters → 2 free spaces"
+      - do: hold D0 = 2 for 0.5
+        msg: รถ 1 คันต้องนับครั้งเดียว (ไม่ลดซ้ำขณะเซนเซอร์ยังเห็นรถ)
+        msg_en: "One car counts once (no repeated decrement while the sensor still sees it)"
+        hint: "ใช้ขอบขาขึ้น เช่น [DECP D0] หรือ PLS M0 ไม่ใช่ DEC ทุก scan"
+        hint_en: "Use a rising edge such as [DECP D0] or PLS M0, not DEC every scan"
+      - wait 0.3
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X0 0.3
+      - do: expect D0 = 0 and Y1 = 1 and Y0 = 0 within 0.5
+        msg: รถเข้าครบ 3 คัน → D0 = 0 ไฟเต็ม (Y1) ติด
+        msg_en: "3 cars in → D0 = 0, FULL lamp (Y1) on"
+  - name: เต็มแล้วรถเข้ามาอีก
+    name_en: "Another car when full"
+    steps:
+      - do: expect D0 = 3 within 0.5
+        msg: "เริ่มจากช่องว่าง 3 ช่อง"
+        msg_en: "Start from 3 free spaces"
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X0 0.3
+      - do: hold D0 = 0 for 0.5
+        msg: เต็มแล้ว D0 ต้องไม่ติดลบ
+        msg_en: "When full, D0 must not go negative"
+        hint: ลด D0 เฉพาะเมื่อ D0 > 0 เช่น [> D0 K0] ต่อก่อน DECP
+        hint_en: "Decrement D0 only when D0 > 0, e.g. [> D0 K0] before DECP"
+  - name: รถออก
+    name_en: "A car leaves"
+    steps:
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X0 0.3
+      - wait 0.3
+      - pulse X1 0.3
+      - do: expect D0 = 1 and Y0 = 1 and Y1 = 0 within 0.5
+        msg: รถออก 1 คัน → ช่องว่างเพิ่มเป็น 1 ไฟว่างกลับมาติด
+        msg_en: "One car leaves → 1 free space, VACANT lamp back on"
+      - wait 0.3
+      - pulse X1 0.3
+      - wait 0.3
+      - pulse X1 0.3
+      - wait 0.3
+      - pulse X1 0.3
+      - do: hold D0 = 3 for 0.5
+        msg: ช่องว่างต้องไม่เกินจำนวนช่องจอด (3)
+        msg_en: "Free spaces must not exceed the number of spaces (3)"
+        hint: เพิ่ม D0 เฉพาะเมื่อ D0 < D10
+        hint_en: "Increment D0 only when D0 < D10"
+  - name: เปลี่ยนจำนวนช่องจอดเป็น 5
+    name_en: "Change the number of spaces to 5"
+    steps:
+      - word D10 5
+      - pulse X2 0.3
+      - do: expect D0 = 5 within 0.5
+        msg: ตั้ง D10 = 5 แล้วกดรีเซ็ต → D0 = 5
+        msg_en: "Set D10 = 5 and press Reset → D0 = 5"
+        hint: อ่านจำนวนช่องจาก D10 ไม่ใช่ค่าคงที่ (K) ในโปรแกรม
+        hint_en: "Read the number of spaces from D10, not a constant (K) in the program"

@@ -1,0 +1,21 @@
+# ตั้งค่าการเชื่อมต่อ PLC
+backend: slmp          # slmp = GX Simulator3 / PLC จริง, mock = PLC จำลองในโปรแกรม
+host: 127.0.0.1
+port: 5511             # GX Simulator3: 5511 = ระบบที่ 1
+plc_type: iQ-R         # ค่าสำหรับ pymcprotocol
+xy_base: 16            # iQ-R = เลข X/Y ฐาน 16 (FX5 = 8)
+# หมายเหตุ (ทดสอบจริง 16/11/2569, GX Works3 1.110Q):
+#   GX Simulator3 ตอบ SLMP เฉพาะโปรเจกต์ RCPU (เช่น R04CPU) เท่านั้น — โปรเจกต์ FX5U ไม่ตอบ
+#   ต้องตั้ง Module Parameter > Own Node Settings > Enable/Disable Online Change = "Enable All (SLMP)"
+timeout_s: 2.0
+poll_ms: 50            # รอบอ่านข้อมูล (มิลลิวินาที)
+chart_window_s: 10
+
+# ถ้า GX Simulator3 ไม่ยอมให้เขียน X จากภายนอก ให้เปลี่ยนเป็น M
+# แล้วในโปรแกรม ladder ใช้ M100..M107 แทนปุ่ม X0..X7
+input_device: X
+input_offset: 100
+
+# เช็กเวอร์ชันใหม่ (หน้า About → ปุ่มเช็ก) — ใส่ลิงก์ https ของ version.json เช่นไฟล์ใน GitHub Releases
+# ว่าง = ปิด · โปรแกรมเช็กเฉพาะตอนผู้ใช้กดปุ่มเท่านั้น
+update_url: "https://github.com/kiattikunchimwai-ux/plc-trainer/releases/latest/download/version.json"

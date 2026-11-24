@@ -1,0 +1,68 @@
+# ด่าน 1 — ตรวจจากผล I/O เท่านั้น เขียน ladder แบบไหนก็ได้ที่ทำงานถูก
+id: 01_self_hold
+order: 1
+title: "ด่าน 1: วงจรคงสถานะ (Self-holding)"
+title_en: "Level 1: Self-holding circuit"
+panel: 01_self_hold.plcpanel
+desc: |
+  กด Start (X0) → มอเตอร์ (Y0) ทำงานค้างแม้ปล่อยปุ่ม
+  กด Stop (X1) → มอเตอร์หยุด
+  กด Start ขณะกด Stop ค้าง → มอเตอร์ต้องไม่ทำงาน (Stop สำคัญกว่า)
+desc_en: |
+  Press Start (X0) → the motor (Y0) keeps running after the button is released
+  Press Stop (X1) → the motor stops
+  Press Start while Stop is held → the motor must not run (Stop has priority)
+idle: {X0: 0, X1: 0}
+reset:
+  - pulse X1 0.3
+cases:
+  - name: กด Start แล้วมอเตอร์ทำงานค้าง
+    name_en: "Start latches the motor"
+    steps:
+      - set X0 1
+      - do: expect Y0 = 1 within 0.5
+        msg: กด Start → มอเตอร์ (Y0) ทำงาน
+        msg_en: "Press Start → motor (Y0) runs"
+        hint: ใช้หน้าสัมผัส X0 ต่ออนุกรมกับคอยล์ Y0
+        hint_en: "Put an X0 contact in series with the Y0 coil"
+      - set X0 0
+      - do: hold Y0 = 1 for 1.5
+        msg: ปล่อยปุ่ม Start แล้วมอเตอร์ยังทำงานค้าง
+        msg_en: "Release Start and the motor keeps running"
+        hint: ต่อหน้าสัมผัส Y0 ขนานกับ X0 เพื่อคงสถานะ (self-holding)
+        hint_en: "Put a Y0 contact in parallel with X0 to hold it on (self-holding)"
+  - name: กด Stop แล้วมอเตอร์หยุด
+    name_en: "Stop stops the motor"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: "ก่อนกด Stop มอเตอร์ (Y0) ต้องทำงานอยู่"
+        msg_en: "Before Stop, the motor (Y0) must be running"
+      - wait 0.3
+      - set X1 1
+      - do: expect Y0 = 0 within 0.5
+        msg: กด Stop → มอเตอร์ (Y0) หยุด
+        msg_en: "Press Stop → motor (Y0) stops"
+        hint: ปุ่ม Stop เป็นแบบ NO ต้องใช้หน้าสัมผัส NC (/X1) ต่ออนุกรมในวงจร
+        hint_en: "The Stop button is NO, so use an NC contact (/X1) in series in the circuit"
+      - set X1 0
+      - do: hold Y0 = 0 for 1.0
+        msg: ปล่อย Stop แล้วมอเตอร์ต้องไม่ทำงานเอง
+        msg_en: "Release Stop and the motor must not restart by itself"
+  - name: กด Start พร้อม Stop → Stop สำคัญกว่า
+    name_en: "Start + Stop together → Stop wins"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: "กด Start อย่างเดียว มอเตอร์ (Y0) ต้องทำงานได้"
+        msg_en: "Start alone must run the motor (Y0)"
+      - set X1 1
+      - waitfor Y0 = 0 within 0.5
+      - set X0 1
+      - do: hold Y0 = 0 for 1.0
+        msg: กด Start ขณะกด Stop ค้าง มอเตอร์ต้องไม่ทำงาน
+        msg_en: "Press Start while Stop is held — the motor must not run"
+        hint: วาง /X1 ไว้หลังจุดขนานของ X0 กับ Y0 เพื่อให้ตัดได้ทั้งสองทาง
+        hint_en: "Place /X1 after the X0 / Y0 parallel branch so it cuts both paths"
+      - set X0 0
+      - set X1 0

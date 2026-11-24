@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "name": "ลานจอดรถ",
+  "devices": [
+    {
+      "kind": "sensor",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "รถเข้า",
+        "address": "X0",
+        "contact": "NO",
+        "sense": "photo"
+      },
+      "id": "937560b1"
+    },
+    {
+      "kind": "sensor",
+      "x": 140,
+      "y": 0,
+      "props": {
+        "label": "รถออก",
+        "address": "X1",
+        "contact": "NO",
+        "sense": "photo"
+      },
+      "id": "d133439b"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 300,
+      "y": 30,
+      "props": {
+        "label": "รีเซ็ต",
+        "address": "X2",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "3"
+      },
+      "id": "53f72a25"
+    },
+    {
+      "kind": "setvalue",
+      "x": 0,
+      "y": 200,
+      "props": {
+        "label": "จำนวนช่องจอด (D10)",
+        "address": "D10",
+        "value": 10,
+        "min": 1,
+        "max": 99
+      },
+      "id": "ff896601"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 200,
+      "y": 200,
+      "props": {
+        "label": "ช่องว่าง (D0)",
+        "address": "D0",
+        "digits": 2
+      },
+      "id": "a8aeff0f"
+    },
+    {
+      "kind": "lamp",
+      "x": 360,
+      "y": 180,
+      "props": {
+        "label": "ว่าง",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "8b4c507d"
+    },
+    {
+      "kind": "lamp",
+      "x": 360,
+      "y": 280,
+      "props": {
+        "label": "เต็ม",
+        "address": "Y1",
+        "color": "red"
+      },
+      "id": "61504442"
+    },
+    {
+      "kind": "note",
+      "x": 760,
+      "y": 130,
+      "props": {
+        "label": "",
+        "text": "โจทย์: รถเข้า 1 คัน → ช่องว่างลด 1 · รถออก 1 คัน → ช่องว่างเพิ่ม 1\nช่องว่าง = 0 → ไฟเต็ม (Y1) · ยังมีที่ → ไฟว่าง (Y0)\nปุ่มรีเซ็ต → ช่องว่าง = ค่าใน D10\n\nX0 เซนเซอร์รถเข้า · X1 เซนเซอร์รถออก · X2 รีเซ็ต\nD10 จำนวนช่องจอด · D0 ช่องว่าง\nY0 ว่าง · Y1 เต็ม\n\nคลิกที่เซนเซอร์ = รถผ่าน 1 คัน",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "ec2cd54d"
+    }
+  ]
+}

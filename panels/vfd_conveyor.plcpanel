@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "name": "สายพานปรับความเร็วด้วย VFD",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "30adee1f"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "0cd03a9f"
+    },
+    {
+      "kind": "pot",
+      "x": 240,
+      "y": 0,
+      "props": {
+        "label": "ปรับความเร็ว (D20)",
+        "address": "D20",
+        "value": 2000,
+        "max": 4000
+      },
+      "id": "02298c34"
+    },
+    {
+      "kind": "vfd",
+      "x": 0,
+      "y": 180,
+      "props": {
+        "label": "INV1",
+        "address": "Y0",
+        "addr_rev": "",
+        "addr_freq": "D0",
+        "addr_atspeed": "X2",
+        "ramp_s": 3.0,
+        "max_hz": 60
+      },
+      "id": "dd8726bc"
+    },
+    {
+      "kind": "gauge",
+      "x": 400,
+      "y": 0,
+      "props": {
+        "label": "ความถี่สั่ง (D0)",
+        "address": "D0",
+        "style": "bar",
+        "min": 0,
+        "max": 600,
+        "unit": "Hz×10"
+      },
+      "id": "d8b2ede4"
+    },
+    {
+      "kind": "sensor",
+      "x": 360,
+      "y": 260,
+      "props": {
+        "label": "PS ปลายสาย",
+        "address": "X3",
+        "contact": "NO",
+        "sense": "photo"
+      },
+      "id": "9d1c42f9"
+    },
+    {
+      "kind": "conveyor",
+      "x": 260,
+      "y": 360,
+      "props": {
+        "label": "สายพาน",
+        "address": "Y0",
+        "length": 440,
+        "speed": 120,
+        "part_mode": "random",
+        "addr_hz": "D0"
+      },
+      "id": "e29765c9"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 520,
+      "y": 180,
+      "props": {
+        "label": "นับชิ้นงาน (C0)",
+        "address": "CN0",
+        "digits": 3
+      },
+      "id": "85a0b30f"
+    },
+    {
+      "kind": "note",
+      "x": 820,
+      "y": 180,
+      "props": {
+        "label": "",
+        "text": "โจทย์: หมุนปุ่มปรับความเร็ว (0–4000 ที่ D20) แล้วแปลงเป็นความถี่ D0 = 0–600\n(D0 = D20 × 600 / 4000 → 60.0 Hz) · Start → VFD เดิน (Y0) สายพานวิ่งตามความถี่\nนับชิ้นงานที่ผ่านเซนเซอร์ปลายสายด้วย C0\n\nX0 Start · X1 Stop · X2 ถึงความเร็ว (SU) · X3 เซนเซอร์ปลายสาย\nD20 ค่าจากปุ่มหมุน · D0 ความถี่สั่ง (Hz×10)\nY0 VFD เดิน (STF)",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "b196c90f"
+    }
+  ]
+}

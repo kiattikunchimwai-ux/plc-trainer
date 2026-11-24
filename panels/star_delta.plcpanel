@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "name": "สตาร์-เดลต้า (Star-Delta)",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "c9f28c60"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 100,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "5af14c4e"
+    },
+    {
+      "kind": "overload",
+      "x": 200,
+      "y": 0,
+      "props": {
+        "label": "OL1",
+        "address": "X2",
+        "contact": "NC",
+        "addr_motor": "Y0",
+        "trip_s": 0,
+        "key": "3"
+      },
+      "id": "c0a1fd0e"
+    },
+    {
+      "kind": "contactor",
+      "x": 0,
+      "y": 180,
+      "props": {
+        "label": "K1 Main",
+        "address": "Y0",
+        "addr_aux": "X3"
+      },
+      "id": "1e42aee8"
+    },
+    {
+      "kind": "contactor",
+      "x": 100,
+      "y": 180,
+      "props": {
+        "label": "K2 Star",
+        "address": "Y1",
+        "addr_aux": ""
+      },
+      "id": "f1675759"
+    },
+    {
+      "kind": "contactor",
+      "x": 200,
+      "y": 180,
+      "props": {
+        "label": "K3 Delta",
+        "address": "Y2",
+        "addr_aux": ""
+      },
+      "id": "baffd933"
+    },
+    {
+      "kind": "motor",
+      "x": 340,
+      "y": 180,
+      "props": {
+        "label": "มอเตอร์ 3 เฟส",
+        "address": "Y0"
+      },
+      "id": "726283f7"
+    },
+    {
+      "kind": "display",
+      "x": 100,
+      "y": 330,
+      "props": {
+        "label": "Timer T0",
+        "address": "TN0",
+        "unit": "×100ms"
+      },
+      "id": "a2904354"
+    },
+    {
+      "kind": "lamp",
+      "x": 260,
+      "y": 330,
+      "props": {
+        "label": "Y (สตาร์)",
+        "address": "Y1",
+        "color": "yellow"
+      },
+      "id": "b12a7eba"
+    },
+    {
+      "kind": "lamp",
+      "x": 360,
+      "y": 330,
+      "props": {
+        "label": "Δ (เดลต้า)",
+        "address": "Y2",
+        "color": "green"
+      },
+      "id": "dfc19ad3"
+    },
+    {
+      "kind": "note",
+      "x": 620,
+      "y": 170,
+      "props": {
+        "label": "",
+        "text": "โจทย์: Start → K1 + K2 (สตาร์) 5 วินาที → ปลด K2 → ต่อ K3 (เดลต้า)\nห้าม K2 กับ K3 ติดพร้อมกัน (Interlock) · Stop หรือ OL ทริป = ปลดทุกตัว\n\nX0 Start · X1 Stop · X2 OL (NC) · X3 aux K1\nY0 K1 Main · Y1 K2 Star · Y2 K3 Delta",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "bcfa6290"
+    }
+  ]
+}

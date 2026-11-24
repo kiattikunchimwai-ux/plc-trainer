@@ -1,0 +1,76 @@
+id: 04_counter
+order: 4
+title: "ด่าน 4: นับชิ้นงาน (Counter)"
+title_en: "Level 4: Counting parts (counter)"
+panel: 04_counter.plcpanel
+desc: |
+  Start (X0) → สายพาน (Y0) เดิน · Stop (X1) → หยุด
+  นับชิ้นงานที่ผ่านเซนเซอร์ X2 ครบ 5 ชิ้น → ไฟครบ (Y2) ติด
+  กด Reset (X3) → เริ่มนับใหม่ ไฟดับ
+desc_en: |
+  Start (X0) → conveyor (Y0) runs · Stop (X1) → stops
+  Count parts passing sensor X2; at 5 parts → done lamp (Y2) lights
+  Press Reset (X3) → counting restarts and the lamp goes off
+idle: {X0: 0, X1: 0, X2: 0, X3: 0}
+settle: 0.5
+reset:
+  - pulse X1 0.2
+  - pulse X3 0.2
+cases:
+  - name: Start / Stop สายพาน
+    name_en: "Conveyor Start / Stop"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: กด Start → สายพาน (Y0) เดินค้าง
+        msg_en: "Press Start → conveyor (Y0) keeps running"
+      - pulse X1 0.3
+      - do: expect Y0 = 0 within 0.5
+        msg: กด Stop → สายพานหยุด
+        msg_en: "Press Stop → conveyor stops"
+  - name: นับครบ 5 ชิ้น
+    name_en: "Count to 5"
+    steps:
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - do: hold Y2 = 0 for 0.6
+        msg: ผ่านไป 4 ชิ้น ไฟครบยังต้องไม่ติด
+        msg_en: "After 4 parts the done lamp must still be off"
+        hint: "ตั้งค่า Counter เป็น K5"
+        hint_en: "Set the counter preset to K5"
+      - pulse X2 0.2
+      - do: expect Y2 = 1 within 0.5
+        msg: ชิ้นที่ 5 → ไฟครบ (Y2) ติด
+        msg_en: "5th part → done lamp (Y2) on"
+        hint: "Counter นับขอบขาขึ้นของ X2 เช่น OUT C0 K5 แล้วใช้ C0 สั่ง Y2"
+        hint_en: "A counter counts rising edges of X2, e.g. OUT C0 K5, then use C0 to drive Y2"
+  - name: Reset แล้วนับใหม่
+    name_en: "Reset and count again"
+    steps:
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - wait 0.2
+      - pulse X2 0.2
+      - do: expect Y2 = 1 within 0.5
+        msg: นับครบ 5 อีกครั้ง
+        msg_en: "Count to 5 again"
+      - pulse X3 0.3
+      - do: expect Y2 = 0 within 0.5
+        msg: กด Reset → ไฟครบดับ
+        msg_en: "Press Reset → done lamp off"
+        hint: "ใช้ X3 สั่ง RST C0"
+        hint_en: "Use X3 to RST C0"
+      - pulse X2 0.2
+      - do: hold Y2 = 0 for 0.6
+        msg: หลัง Reset นับใหม่ตั้งแต่ 0
+        msg_en: "After Reset, counting starts from 0"

@@ -1,0 +1,12 @@
+{
+  "_comment": "ใส่ PromptPay ID จริงก่อนปล่อยโปรแกรม (แนะนำ e-Wallet 15 หลัก หรือเบอร์ที่ใช้รับเงินโดยเฉพาะ) และตรวจชื่อบัญชีด้วยการสแกนจากแอปธนาคาร",
+  "promptpay_id": "0612830856",
+  "promptpay_name": "",
+  "links": [],
+  "goal": {
+    "text": "Ladder editor + PLC จำลองในตัว (ไม่ต้องมี GX Works3)",
+    "target": 20000,
+    "current": 0
+  },
+  "supporters": []
+}

@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "name": "ด่าน 7: ไฟจราจร + ปุ่มคนข้าม",
+  "devices": [
+    {
+      "kind": "traffic",
+      "x": 0,
+      "y": 60,
+      "props": {
+        "label": "ไฟรถ",
+        "address": "Y0",
+        "addr_yellow": "Y1",
+        "addr_green": "Y2"
+      },
+      "id": "c37b839b"
+    },
+    {
+      "kind": "lamp",
+      "x": 120,
+      "y": 20,
+      "props": {
+        "label": "คนข้าม: หยุด",
+        "address": "Y3",
+        "color": "red"
+      },
+      "id": "7115ac81"
+    },
+    {
+      "kind": "lamp",
+      "x": 120,
+      "y": 130,
+      "props": {
+        "label": "คนข้าม: เดิน",
+        "address": "Y4",
+        "color": "green"
+      },
+      "id": "7aef26a1"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 260,
+      "y": 20,
+      "props": {
+        "label": "ปุ่มขอข้าม",
+        "address": "X0",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "1"
+      },
+      "id": "6b4d33f9"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 300,
+      "y": 150,
+      "props": {
+        "label": "นับถอยหลัง (D0)",
+        "address": "D0",
+        "digits": 2
+      },
+      "id": "d281d7d3"
+    },
+    {
+      "kind": "setvalue",
+      "x": 300,
+      "y": 270,
+      "props": {
+        "label": "เวลาคนข้าม (D10, วินาที)",
+        "address": "D10",
+        "value": 5,
+        "min": 1,
+        "max": 99
+      },
+      "id": "8dcf37d5"
+    },
+    {
+      "kind": "note",
+      "x": 620,
+      "y": 120,
+      "props": {
+        "label": "",
+        "text": "โจทย์: ไฟรถเขียวค้าง · กดปุ่มขอข้าม → เหลือง 3 วิ → แดง แล้วไฟคนข้ามเขียว\nตามเวลาใน D10 พร้อมนับถอยหลังที่ D0 → กลับเป็นไฟรถเขียว\n\nX0 ปุ่มขอข้าม · D10 เวลา (วินาที) · D0 นับถอยหลัง\nY0 แดง · Y1 เหลือง · Y2 เขียว (รถ)\nY3 หยุด · Y4 เดิน (คนข้าม)",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "96dc65b7"
+    }
+  ]
+}

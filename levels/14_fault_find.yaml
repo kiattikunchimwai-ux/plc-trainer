@@ -1,0 +1,24 @@
+# ด่าน 14 — หาจุดเสีย: ระบบสุ่มทำให้อุปกรณ์เสีย 1 จุดแบบซ่อน นักเรียนสังเกตจากพฤติกรรม I/O แล้วทาย
+# ไม่ตรวจ ladder — ใช้โปรแกรมด่าน 3 ที่ทำงานถูกแล้ว
+id: 14_fault_find
+order: 14
+title: "ด่าน 14: หาจุดเสีย (Troubleshooting)"
+title_en: "Level 14: Troubleshooting"
+panel: 14_fault_find.plcpanel
+desc: |
+  ใช้โปรแกรมด่าน 3 ที่ผ่านแล้ว (Start X0 · Stop X1 · ปั๊ม Y0 · มอเตอร์หลัก Y1 หลัง 3 วินาที)
+  กด ▶ เริ่มหาจุดเสีย → ระบบซ่อนความเสีย 1 จุด · กดปุ่ม สังเกตมอเตอร์/ไฟ/ตาราง I/O
+  คลิกขวาอุปกรณ์ที่คิดว่าเสีย → เลือกอาการ · ทายได้ 3 ครั้ง (ถูกครั้งแรก ★★★)
+desc_en: |
+  Use your working Level 3 program (Start X0 · Stop X1 · pump Y0 · main motor Y1 after 3 s)
+  Press ▶ Start fault hunt → one hidden fault is injected · press buttons and watch the motors/lamps/I/O table
+  Right-click the device you suspect → choose the symptom · 3 guesses (right first time = ★★★)
+faults:
+  guesses: 3
+  pool:
+    - {device: Start, codes: [stuck_on, wire_break]}
+    - {device: Stop, codes: [stuck_on, wire_break]}
+    - {device: ปั๊มน้ำมัน, codes: [jammed]}
+    - {device: มอเตอร์หลัก, codes: [jammed]}
+    - {device: ไฟปั๊ม, codes: [burnt]}
+    - {device: ไฟมอเตอร์หลัก, codes: [burnt]}

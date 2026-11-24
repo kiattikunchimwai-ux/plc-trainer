@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "name": "ประตูม้วนโรงรถ",
+  "devices": [
+    {
+      "kind": "axis",
+      "x": 180,
+      "y": 100,
+      "props": {
+        "label": "ประตูม้วน",
+        "address": "Y0",
+        "addr_rev": "Y1",
+        "addr_p1": "X0",
+        "addr_p2": "",
+        "addr_p3": "X1",
+        "addr_pos": "",
+        "style": "door",
+        "travel_s": 5.0
+      },
+      "id": "0d2cc712"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "เปิด",
+        "address": "X2",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "20e88726"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 120,
+      "props": {
+        "label": "ปิด",
+        "address": "X3",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "2"
+      },
+      "id": "0c5780dc"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 240,
+      "props": {
+        "label": "หยุด",
+        "address": "X4",
+        "contact": "NO",
+        "color": "red",
+        "key": "3"
+      },
+      "id": "a1e06dca"
+    },
+    {
+      "kind": "sensor",
+      "x": 180,
+      "y": 300,
+      "props": {
+        "label": "กันหนีบ",
+        "address": "X5",
+        "contact": "NO",
+        "sense": "photo"
+      },
+      "id": "a5db8dd9"
+    },
+    {
+      "kind": "lamp",
+      "x": 380,
+      "y": 40,
+      "props": {
+        "label": "ไฟเตือน",
+        "address": "Y2",
+        "color": "orange"
+      },
+      "id": "ae32ce31"
+    },
+    {
+      "kind": "buzzer",
+      "x": 380,
+      "y": 160,
+      "props": {
+        "label": "ออด",
+        "address": "Y3"
+      },
+      "id": "4b525139"
+    },
+    {
+      "kind": "note",
+      "x": 660,
+      "y": 140,
+      "props": {
+        "label": "",
+        "text": "โจทย์: กดเปิด → ประตูขึ้นจนถึงลิมิตบน · กดปิด → ประตูลงจนถึงลิมิตล่าง\nระหว่างเคลื่อนที่ไฟเตือนกระพริบ · กดหยุดได้ทุกเมื่อ\nขณะปิดถ้าเซนเซอร์กันหนีบเห็นสิ่งกีดขวาง → หยุดแล้วเปิดขึ้นทันที + ออดดัง\n\nX0 ลิมิตล่าง (ปิดสุด) · X1 ลิมิตบน (เปิดสุด)\nX2 เปิด · X3 ปิด · X4 หยุด · X5 กันหนีบ\nY0 มอเตอร์ขึ้น · Y1 มอเตอร์ลง · Y2 ไฟเตือน · Y3 ออด\n\nคลิกเซนเซอร์กันหนีบเพื่อจำลองว่ามีรถขวาง",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "dec5c038"
+    }
+  ]
+}

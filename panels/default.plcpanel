@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "name": "ผังตัวอย่าง: Start/Stop + Timer + สายพานนับชิ้นงาน",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0.0,
+      "y": 0.0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "7c1dd1ce"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 100.0,
+      "y": 0.0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "8974a2ed"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 200.0,
+      "y": 0.0,
+      "props": {
+        "label": "Reset C0",
+        "address": "X3",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "3"
+      },
+      "id": "1286db2a"
+    },
+    {
+      "kind": "lamp",
+      "x": 360.0,
+      "y": 0.0,
+      "props": {
+        "label": "RUN",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "81c3d920"
+    },
+    {
+      "kind": "lamp",
+      "x": 460.0,
+      "y": 0.0,
+      "props": {
+        "label": "T0 ครบ",
+        "address": "Y1",
+        "color": "orange"
+      },
+      "id": "1a27230c"
+    },
+    {
+      "kind": "lamp",
+      "x": 560.0,
+      "y": 0.0,
+      "props": {
+        "label": "นับครบ 5",
+        "address": "Y2",
+        "color": "red"
+      },
+      "id": "6d30f7d5"
+    },
+    {
+      "kind": "motor",
+      "x": 680.0,
+      "y": 0.0,
+      "props": {
+        "label": "มอเตอร์สายพาน",
+        "address": "Y0"
+      },
+      "id": "c2528d46"
+    },
+    {
+      "kind": "display",
+      "x": 360.0,
+      "y": 140.0,
+      "props": {
+        "label": "Timer T0",
+        "address": "TN0",
+        "unit": "×100ms"
+      },
+      "id": "27d0c004"
+    },
+    {
+      "kind": "display",
+      "x": 520.0,
+      "y": 140.0,
+      "props": {
+        "label": "Counter C0",
+        "address": "CN0",
+        "unit": "ชิ้น"
+      },
+      "id": "b80f67eb"
+    },
+    {
+      "kind": "sensor",
+      "x": 260.0,
+      "y": 160.0,
+      "props": {
+        "label": "เซนเซอร์ PS1",
+        "address": "X2",
+        "contact": "NO",
+        "key": "4"
+      },
+      "id": "af17bbbb"
+    },
+    {
+      "kind": "conveyor",
+      "x": 220.0,
+      "y": 320.0,
+      "props": {
+        "label": "สายพาน (Y0)",
+        "address": "Y0",
+        "length": 480,
+        "speed": 120
+      },
+      "id": "e243422c"
+    }
+  ]
+}

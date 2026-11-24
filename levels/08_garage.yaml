@@ -1,0 +1,114 @@
+id: 08_garage
+order: 8
+title: "ด่าน 8: ประตูม้วนโรงรถ + กันหนีบ"
+title_en: "Level 8: Garage roller door + anti-pinch"
+panel: 08_garage.plcpanel
+desc: |
+  กดเปิด (X2) → มอเตอร์ขึ้น (Y0) จนถึงลิมิตบน (X1) แล้วหยุดเอง
+  กดปิด (X3) → มอเตอร์ลง (Y1) จนถึงลิมิตล่าง (X0) แล้วหยุดเอง · กดหยุด (X4) ได้ทุกเมื่อ
+  ระหว่างเคลื่อนที่ไฟเตือน (Y2) กระพริบ · ห้าม Y0 กับ Y1 ON พร้อมกัน
+  ขณะปิด ถ้าเซนเซอร์กันหนีบ (X5) เห็นสิ่งกีดขวาง → หยุดลงทันทีแล้วเปิดขึ้น + ออด (Y3) ดัง
+desc_en: |
+  Press Open (X2) → motor up (Y0) until the upper limit (X1), then stop
+  Press Close (X3) → motor down (Y1) until the lower limit (X0), then stop · Stop (X4) works at any time
+  The warning lamp (Y2) blinks while moving · Y0 and Y1 must never be ON together
+  While closing, if the anti-pinch sensor (X5) sees an obstacle → stop going down, open again + buzzer (Y3)
+idle: {X2: 0, X3: 0, X4: 0, X5: 0}
+reset:
+  - pulse X3 0.3
+  - waitfor X0 = 1 within 6
+cases:
+  - name: เปิดประตูจนสุดแล้วหยุดเอง
+    name_en: "Open fully and stop"
+    steps:
+      - pulse X2 0.3
+      - do: expect Y0 = 1 and Y1 = 0 within 0.5
+        msg: กดเปิด → มอเตอร์ขึ้น (Y0) ทำงานค้าง
+        msg_en: "Press Open → motor up (Y0) latched"
+        hint: "ปุ่มกดแล้วปล่อย ต้องใช้ self-holding หรือ SET Y0"
+        hint_en: "The button is momentary, so use self-holding or SET Y0"
+      - do: expect X1 = 1 within 4.5
+        msg: ประตูขึ้นไปจนถึงลิมิตบน (X1)
+        msg_en: "The door rises to the upper limit (X1)"
+      - do: expect Y0 = 0 within 0.5
+        msg: ถึงลิมิตบน → มอเตอร์ขึ้นหยุด
+        msg_en: "Upper limit → motor up stops"
+        hint: ใส่หน้าสัมผัส NC ของ X1 ตัดวงจรมอเตอร์ขึ้น
+        hint_en: "Put an NC contact of X1 in the motor-up circuit"
+      - do: hold Y0 = 0 and Y1 = 0 for 1
+        msg: ประตูหยุดนิ่งที่ตำแหน่งเปิดสุด
+        msg_en: "The door stays at fully open"
+  - name: ปิดประตูจนสุดแล้วหยุดเอง
+    name_en: "Close fully and stop"
+    steps:
+      - pulse X2 0.3
+      - waitfor X1 = 1 within 5
+      - wait 0.3
+      - pulse X3 0.3
+      - do: expect Y1 = 1 and Y0 = 0 within 0.5
+        msg: กดปิด → มอเตอร์ลง (Y1) ทำงานค้าง (และขึ้นต้องดับ)
+        msg_en: "Press Close → motor down (Y1) latched (and up must be off)"
+      - do: expect X0 = 1 within 4.5
+        msg: ประตูลงจนถึงลิมิตล่าง (X0)
+        msg_en: "The door lowers to the lower limit (X0)"
+      - do: expect Y1 = 0 within 0.5
+        msg: ถึงลิมิตล่าง → มอเตอร์ลงหยุด
+        msg_en: "Lower limit → motor down stops"
+  - name: กดหยุดกลางทาง
+    name_en: "Stop midway"
+    steps:
+      - pulse X2 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: "ก่อนกดหยุด ประตูต้องกำลังขึ้น (Y0)"
+        msg_en: "Before Stop, the door must be going up (Y0)"
+      - wait 0.7
+      - pulse X4 0.3
+      - do: expect Y0 = 0 and Y1 = 0 within 0.5
+        msg: กดหยุด → มอเตอร์ดับทั้งสองทาง
+        msg_en: "Press Stop → motor off in both directions"
+      - do: hold Y0 = 0 and Y1 = 0 for 1
+        msg: ปล่อยปุ่มหยุดแล้วประตูยังหยุดนิ่ง (ไม่เดินต่อเอง)
+        msg_en: "Release Stop and the door stays put (doesn't resume)"
+  - name: ไฟเตือนระหว่างเคลื่อนที่
+    name_en: "Warning lamp while moving"
+    steps:
+      - pulse X2 0.3
+      - do: expect Y2 = 1 within 1.2
+        msg: ระหว่างประตูเคลื่อนที่ ไฟเตือน (Y2) ต้องติด/กระพริบ
+        msg_en: "While the door moves, the warning lamp (Y2) must be on/blinking"
+        hint: "เช่น Y2 = (Y0 หรือ Y1) AND หน้าสัมผัสนาฬิกา 1 วินาที หรือใช้ Timer 2 ตัวทำไฟกระพริบ"
+        hint_en: "e.g. Y2 = (Y0 or Y1) AND a 1-second clock contact, or use 2 timers for a flasher"
+      - waitfor X1 = 1 within 5
+      - wait 0.5
+      - do: hold Y2 = 0 for 1
+        msg: ประตูหยุดแล้ว ไฟเตือนต้องดับ
+        msg_en: "When the door stops, the warning lamp must go off"
+  - name: เซนเซอร์กันหนีบขณะปิด
+    name_en: "Anti-pinch sensor while closing"
+    steps:
+      - pulse X2 0.3
+      - waitfor X1 = 1 within 5
+      - wait 0.3
+      - pulse X3 0.3
+      - do: expect Y1 = 1 within 0.5
+        msg: "ก่อนมีสิ่งกีดขวาง ประตูต้องกำลังลง (Y1)"
+        msg_en: "Before the obstacle, the door must be going down (Y1)"
+      - wait 0.7
+      - set X5 1
+      - do: expect Y1 = 0 within 0.3
+        msg: กันหนีบเห็นสิ่งกีดขวาง → หยุดลงทันที
+        msg_en: "Anti-pinch sees an obstacle → stop going down immediately"
+        hint: ใส่หน้าสัมผัส NC ของ X5 ในวงจรมอเตอร์ลง
+        hint_en: "Put an NC contact of X5 in the motor-down circuit"
+      - do: expect Y0 = 1 within 1
+        msg: แล้วเปิดประตูขึ้นเองทันที
+        msg_en: "Then open the door again immediately"
+        hint: ใช้ X5 (ขณะ Y1 ทำงาน) สั่งเข้าวงจรมอเตอร์ขึ้นเหมือนกดปุ่มเปิด
+        hint_en: "Use X5 (while Y1 is on) to start the motor-up circuit as if Open was pressed"
+      - do: expect Y3 = 1 within 0.5
+        msg: ออดเตือน (Y3) ดัง
+        msg_en: "Buzzer (Y3) sounds"
+      - set X5 0
+      - do: expect X1 = 1 within 4.5
+        msg: ประตูกลับขึ้นไปจนเปิดสุด
+        msg_en: "The door goes back up to fully open"

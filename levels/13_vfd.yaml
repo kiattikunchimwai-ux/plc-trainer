@@ -1,0 +1,75 @@
+id: 13_vfd
+order: 13
+title: "ด่าน 13: สายพานปรับความเร็วด้วย VFD"
+title_en: "Level 13: Variable-speed conveyor with a VFD"
+panel: 13_vfd.plcpanel
+desc: |
+  ปุ่มหมุนปรับความเร็วส่งค่า 0–4000 ลง D20 (Analog) → แปลงเป็นความถี่ D0 = 0–600 (Hz×10)
+  สูตร: D0 = D20 × 600 ÷ 4000  (4000 → 60.0 Hz)
+  Start (X0) → VFD เดิน (Y0) ค้าง · Stop (X1) → หยุด · นับชิ้นงานที่ผ่านเซนเซอร์ปลายสาย (X3) ด้วย C0
+desc_en: |
+  The speed knob writes 0–4000 to D20 (analog) → scale it to a frequency D0 = 0–600 (Hz×10)
+  Formula: D0 = D20 × 600 ÷ 4000  (4000 → 60.0 Hz)
+  Start (X0) → VFD runs (Y0) latched · Stop (X1) → stops · count parts passing the end sensor (X3) in C0
+idle: {X0: 0, X1: 0}
+reset:
+  - pulse X1 0.3
+cases:
+  - name: แปลงค่า Analog เป็นความถี่
+    name_en: "Scale the analog value to a frequency"
+    steps:
+      - word D20 2000
+      - do: expect D0 = 300 within 0.5
+        msg: D20 = 2000 → D0 = 300 (30.0 Hz)
+        msg_en: "D20 = 2000 → D0 = 300 (30.0 Hz)"
+        hint: "[* D20 K600 D100] แล้ว [/ D100 K4000 D0] (คูณก่อนหาร และใช้ผลคูณ 32 บิต)"
+        hint_en: "[* D20 K600 D100] then [/ D100 K4000 D0] (multiply before dividing, using the 32-bit product)"
+      - word D20 4000
+      - do: expect D0 = 600 within 0.5
+        msg: D20 = 4000 → D0 = 600 (60.0 Hz)
+        msg_en: "D20 = 4000 → D0 = 600 (60.0 Hz)"
+      - word D20 1000
+      - do: expect D0 = 150 within 0.5
+        msg: D20 = 1000 → D0 = 150 (15.0 Hz)
+        msg_en: "D20 = 1000 → D0 = 150 (15.0 Hz)"
+      - word D20 0
+      - do: expect D0 = 0 within 0.5
+        msg: D20 = 0 → D0 = 0
+        msg_en: "D20 = 0 → D0 = 0"
+  - name: Start / Stop
+    name_en: "Start / Stop"
+    steps:
+      - word D20 4000
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: กด Start → VFD เดิน (Y0)
+        msg_en: "Press Start → VFD runs (Y0)"
+      - do: hold Y0 = 1 for 1
+        msg: ปล่อยปุ่มแล้ว VFD ยังเดินค้าง
+        msg_en: "Release the button and the VFD keeps running"
+      - waitfor X2 = 1 within 6
+      - pulse X1 0.3
+      - do: expect Y0 = 0 within 0.5
+        msg: กด Stop → VFD หยุด
+        msg_en: "Press Stop → VFD stops"
+  - name: นับชิ้นงานที่ปลายสาย
+    name_en: "Count parts at the belt end"
+    steps:
+      - word D20 4000
+      - pulse X0 0.3
+      - waitfor X2 = 1 within 6
+      - do: hold CN0 = +0 for 0.5
+        msg: ยังไม่มีชิ้นงานผ่านเซนเซอร์ปลายสาย → C0 ต้องไม่นับ
+        msg_en: "No part has passed the end sensor yet → C0 must not count"
+        hint: นับจากเซนเซอร์ปลายสาย (X3) ไม่ใช่ X2 (ถึงความเร็ว)
+        hint_en: "Count from the end sensor (X3), not X2 (at speed)"
+      - part metal
+      - do: expect CN0 >= +1 within 8
+        msg: ชิ้นงานวิ่งผ่านเซนเซอร์ปลายสาย → C0 นับเพิ่ม 1
+        msg_en: "A part passes the end sensor → C0 +1"
+        hint: "X3 → OUT C0 K999"
+        hint_en: "X3 → OUT C0 K999"
+      - do: hold CN0 = +1 for 0.5
+        msg: ชิ้นงาน 1 ชิ้นนับเพิ่มแค่ 1 ครั้ง
+        msg_en: "One part counts only once"
+      - pulse X1 0.3

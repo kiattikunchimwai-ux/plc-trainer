@@ -1,0 +1,67 @@
+id: 03_timer
+order: 3
+title: "ด่าน 3: หน่วงเวลาสตาร์ทมอเตอร์ (Timer)"
+title_en: "Level 3: Delayed motor start (timer)"
+panel: 03_timer.plcpanel
+desc: |
+  กด Start (X0) → ปั๊มน้ำมันหล่อลื่น (Y0) ทำงานทันที
+  ครบ 3 วินาที → มอเตอร์หลัก (Y1) ทำงาน · กด Stop (X1) → หยุดทั้งคู่
+  ถ้ากด Stop ก่อนครบเวลา แล้วกด Start ใหม่ ต้องเริ่มนับ 3 วินาทีใหม่
+desc_en: |
+  Press Start (X0) → the lube oil pump (Y0) starts immediately
+  After 3 seconds → the main motor (Y1) starts · press Stop (X1) → both stop
+  If Stop is pressed before the time is up and Start is pressed again, the 3 seconds start over
+idle: {X0: 0, X1: 0}
+reset:
+  - pulse X1 0.3
+cases:
+  - name: หน่วง 3 วินาที
+    name_en: "3-second delay"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: กด Start → ปั๊มน้ำมัน (Y0) ทำงานทันที
+        msg_en: "Press Start → oil pump (Y0) starts immediately"
+      - do: hold Y1 = 0 for 2.4
+        msg: ช่วงแรกมอเตอร์หลัก (Y1) ยังต้องไม่ทำงาน
+        msg_en: "At first the main motor (Y1) must stay off"
+        hint: "Timer หน่วยละ 100 ms: 3 วินาที = K30"
+        hint_en: "100 ms timer: 3 seconds = K30"
+      - do: expect Y1 = 1 within 1.2
+        msg: ครบประมาณ 3 วินาที → มอเตอร์หลัก (Y1) ทำงาน
+        msg_en: "After about 3 seconds → main motor (Y1) starts"
+        hint: "ใช้ Y0 สั่ง Timer (เช่น T0 K30) แล้วใช้หน้าสัมผัส T0 สั่ง Y1"
+        hint_en: "Use Y0 to drive a timer (e.g. T0 K30) and a T0 contact to drive Y1"
+      - do: hold Y0 = 1 and Y1 = 1 for 1.0
+        msg: ทั้งสองตัวทำงานต่อเนื่อง
+        msg_en: "Both keep running"
+  - name: กด Stop
+    name_en: "Press Stop"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 and Y1 = 1 within 4.2
+        msg: "ก่อนกด Stop ทั้งปั๊มและมอเตอร์หลักต้องทำงานอยู่"
+        msg_en: "Before Stop, both the pump and the main motor must be running"
+      - pulse X1 0.3
+      - do: expect Y0 = 0 and Y1 = 0 within 0.5
+        msg: กด Stop → หยุดทั้งปั๊มและมอเตอร์หลัก
+        msg_en: "Press Stop → both the pump and the main motor stop"
+  - name: หยุดก่อนครบเวลาแล้วเริ่มใหม่
+    name_en: "Stop early, then restart"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: "เริ่มครั้งแรก ปั๊มน้ำมัน (Y0) ต้องทำงาน"
+        msg_en: "First start: the oil pump (Y0) must run"
+      - wait 1.2
+      - pulse X1 0.3
+      - wait 0.5
+      - pulse X0 0.3
+      - do: hold Y1 = 0 for 2.0
+        msg: เริ่มใหม่แล้วต้องนับเวลาใหม่ตั้งแต่ต้น
+        msg_en: "After restarting, timing must start from zero"
+        hint: ใช้ Timer แบบธรรมดา (OUT T) ที่รีเซ็ตเองเมื่อเงื่อนไขหาย ไม่ใช่ Timer สะสม (ST)
+        hint_en: "Use a normal timer (OUT T) that resets when its condition drops, not a retentive timer (ST)"
+      - do: expect Y1 = 1 within 1.6
+        msg: ครบ 3 วินาทีหลังเริ่มใหม่ → Y1 ทำงาน
+        msg_en: "3 seconds after restarting → Y1 starts"

@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "name": "ด่าน 9: ลิฟต์ 3 ชั้น",
+  "devices": [
+    {
+      "kind": "axis",
+      "x": 0,
+      "y": 120,
+      "props": {
+        "label": "ลิฟต์",
+        "address": "Y0",
+        "addr_rev": "Y1",
+        "addr_p1": "X0",
+        "addr_p2": "X1",
+        "addr_p3": "X2",
+        "addr_pos": "",
+        "style": "elevator",
+        "travel_s": 3.0
+      },
+      "id": "655a8315"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 160,
+      "y": 0,
+      "props": {
+        "label": "เรียกชั้น 3",
+        "address": "X5",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "3"
+      },
+      "id": "1a3b8dff"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 160,
+      "y": 120,
+      "props": {
+        "label": "เรียกชั้น 2",
+        "address": "X4",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "2"
+      },
+      "id": "7cd630f1"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 160,
+      "y": 240,
+      "props": {
+        "label": "เรียกชั้น 1",
+        "address": "X3",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "1"
+      },
+      "id": "30f3d29e"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 320,
+      "y": 0,
+      "props": {
+        "label": "ชั้นปัจจุบัน (D0)",
+        "address": "D0",
+        "digits": 1
+      },
+      "id": "cfe7dc1d"
+    },
+    {
+      "kind": "lamp",
+      "x": 300,
+      "y": 140,
+      "props": {
+        "label": "ขึ้น",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "563fcdda"
+    },
+    {
+      "kind": "lamp",
+      "x": 380,
+      "y": 140,
+      "props": {
+        "label": "ลง",
+        "address": "Y1",
+        "color": "orange"
+      },
+      "id": "dd608c8c"
+    },
+    {
+      "kind": "lamp",
+      "x": 340,
+      "y": 260,
+      "props": {
+        "label": "ประตูเปิด",
+        "address": "Y2",
+        "color": "yellow"
+      },
+      "id": "42d4e142"
+    },
+    {
+      "kind": "note",
+      "x": 640,
+      "y": 120,
+      "props": {
+        "label": "",
+        "text": "โจทย์: กดเรียกชั้นไหน ลิฟต์ไปจอดชั้นนั้น (ขึ้น = Y0, ลง = Y1)\nห้ามสั่งขึ้นและลงพร้อมกัน · ถึงชั้นแล้วเปิดประตู (Y2) 3 วินาที\nแสดงเลขชั้นที่ D0\n\nX0 ชั้น 1 · X1 ชั้น 2 · X2 ชั้น 3 (เซนเซอร์ตำแหน่ง)\nX3 / X4 / X5 ปุ่มเรียกชั้น 1 / 2 / 3\nY0 ขึ้น · Y1 ลง · Y2 ประตูเปิด · D0 เลขชั้น",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "1cf2c2ab"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+id: 09_elevator
+order: 9
+title: "ด่าน 9: ลิฟต์ 3 ชั้น"
+title_en: "Level 9: 3-floor lift"
+panel: 09_elevator.plcpanel
+desc: |
+  กดเรียกชั้น (X3 / X4 / X5 = ชั้น 1 / 2 / 3) → ลิฟต์ขึ้น (Y0) หรือลง (Y1) ไปจอดชั้นนั้นพอดี
+  เซนเซอร์ตำแหน่งชั้น: X0 ชั้น 1 · X1 ชั้น 2 · X2 ชั้น 3
+  ถึงชั้นแล้วเปิดประตู (Y2) 3 วินาที · แสดงเลขชั้นปัจจุบันที่ D0
+  ห้ามสั่งขึ้นและลงพร้อมกัน · เรียกชั้นที่ลิฟต์อยู่แล้ว ลิฟต์ต้องไม่ขยับ
+desc_en: |
+  Press a call button (X3 / X4 / X5 = floor 1 / 2 / 3) → the lift goes up (Y0) or down (Y1) and stops exactly at that floor
+  Floor sensors: X0 floor 1 · X1 floor 2 · X2 floor 3
+  On arrival open the door (Y2) for 3 s · show the current floor in D0
+  Never command up and down together · calling the floor it is already on must not move it
+idle: {X3: 0, X4: 0, X5: 0}
+reset:
+  - pulse X3 0.3
+  - waitfor X0 = 1 and Y0 = 0 and Y1 = 0 within 6
+  - waitfor Y2 = 0 within 4
+cases:
+  - name: เรียกจากชั้น 1 ไปชั้น 3
+    name_en: "Call from floor 1 to floor 3"
+    steps:
+      - pulse X5 0.3
+      - do: expect Y0 = 1 and Y1 = 0 within 0.5
+        msg: เรียกชั้น 3 → ลิฟต์ขึ้น (Y0)
+        msg_en: "Call floor 3 → lift goes up (Y0)"
+      - do: expect X2 = 1 within 4
+        msg: ลิฟต์ขึ้นไปถึงชั้น 3 (X2)
+        msg_en: "The lift reaches floor 3 (X2)"
+      - do: expect Y0 = 0 and Y1 = 0 within 0.3
+        msg: ถึงชั้น 3 → หยุดพอดี
+        msg_en: "Floor 3 → stops exactly"
+      - do: expect D0 = 3 within 0.5
+        msg: แสดงเลขชั้น 3 ที่ D0
+        msg_en: "Show floor 3 in D0"
+        hint: "เช่น X2 → MOV K3 D0"
+        hint_en: "e.g. X2 → MOV K3 D0"
+      - do: expect Y2 = 1 within 0.5
+        msg: ถึงชั้นแล้วเปิดประตู (Y2)
+        msg_en: "On arrival open the door (Y2)"
+      - do: hold Y2 = 1 for 2.4
+        msg: ประตูเปิดค้างประมาณ 3 วินาที
+        msg_en: "The door stays open for about 3 s"
+      - do: expect Y2 = 0 within 1.2
+        msg: ครบ 3 วินาที → ปิดประตู
+        msg_en: "After 3 s → close the door"
+  - name: เรียกชั้น 2 (ต้องจอดกลางทาง)
+    name_en: "Call floor 2 (stop in the middle)"
+    steps:
+      - pulse X4 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: อยู่ชั้น 1 เรียกชั้น 2 → ลิฟต์ขึ้น
+        msg_en: "At floor 1, call floor 2 → lift goes up"
+      - do: expect X1 = 1 within 3
+        msg: ลิฟต์ถึงชั้น 2 (X1)
+        msg_en: "The lift reaches floor 2 (X1)"
+      - do: expect Y0 = 0 and Y1 = 0 within 0.3
+        msg: ถึงชั้น 2 → หยุดพอดี (ไม่เลยไปชั้น 3)
+        msg_en: "Floor 2 → stops exactly (doesn't overshoot to floor 3)"
+        hint: ต้องจำว่าเรียกชั้นไหนไว้ (SET M) แล้วใช้เซนเซอร์ของชั้นนั้นหยุด ไม่ใช่วิ่งไปจนลิมิตปลาย
+        hint_en: "Remember which floor was called (SET M) and stop on that floor's sensor, not at the end limit"
+      - do: expect D0 = 2 within 0.5
+        msg: แสดงเลขชั้น 2 ที่ D0
+        msg_en: "Show floor 2 in D0"
+      - do: hold X1 = 1 and Y0 = 0 for 1
+        msg: ลิฟต์จอดนิ่งที่ชั้น 2
+        msg_en: "The lift stays at floor 2"
+  - name: ลงจากชั้น 3 ไปชั้น 1
+    name_en: "Down from floor 3 to floor 1"
+    steps:
+      - pulse X5 0.3
+      - waitfor X2 = 1 and Y0 = 0 within 5
+      - waitfor Y2 = 0 within 4
+      - pulse X3 0.3
+      - do: expect Y1 = 1 and Y0 = 0 within 0.5
+        msg: อยู่ชั้น 3 เรียกชั้น 1 → ลิฟต์ลง (Y1) และต้องไม่สั่งขึ้น
+        msg_en: "At floor 3, call floor 1 → lift goes down (Y1) and up must stay off"
+      - do: hold Y0 = 0 for 1
+        msg: ระหว่างลง ห้ามสั่งขึ้นพร้อมกัน (Interlock)
+        msg_en: "While going down, up must never be on (interlock)"
+        hint: ใส่หน้าสัมผัส NC ของ Y1 ในวงจร Y0 และกลับกัน
+        hint_en: "Put an NC contact of Y1 in the Y0 circuit and vice versa"
+      - do: expect X0 = 1 within 3
+        msg: ลิฟต์ลงถึงชั้น 1 (ผ่านชั้น 2 ไปโดยไม่หยุด)
+        msg_en: "The lift reaches floor 1 (passing floor 2 without stopping)"
+      - do: expect Y1 = 0 within 0.3
+        msg: ถึงชั้น 1 → หยุด
+        msg_en: "Floor 1 → stops"
+      - do: expect D0 = 1 within 0.5
+        msg: แสดงเลขชั้น 1 ที่ D0
+        msg_en: "Show floor 1 in D0"
+  - name: เรียกชั้นที่ลิฟต์อยู่แล้ว
+    name_en: "Call the current floor"
+    steps:
+      - do: expect D0 = 1 within 0.5
+        msg: "ลิฟต์อยู่ชั้น 1 (D0 = 1)"
+        msg_en: "The lift is at floor 1 (D0 = 1)"
+      - pulse X3 0.3
+      - do: hold Y0 = 0 and Y1 = 0 for 1
+        msg: อยู่ชั้น 1 แล้วกดเรียกชั้น 1 → ลิฟต์ไม่ขยับ
+        msg_en: "At floor 1, call floor 1 → the lift doesn't move"

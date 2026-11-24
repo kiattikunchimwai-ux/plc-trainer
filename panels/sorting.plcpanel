@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "name": "คัดแยกโลหะ / พลาสติก",
+  "devices": [
+    {
+      "kind": "zone",
+      "x": 260.0,
+      "y": 215.0,
+      "props": {
+        "label": "สถานีคัดแยก",
+        "w": 640,
+        "h": 330,
+        "color": "blue"
+      },
+      "id": "a9683261"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 0.0,
+      "y": -60.0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "c8fd586c"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110.0,
+      "y": -60.0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "da53c736"
+    },
+    {
+      "kind": "tower",
+      "x": 500.0,
+      "y": -40.0,
+      "props": {
+        "label": "สถานะ",
+        "address": "Y3",
+        "addr_yellow": "Y4",
+        "addr_green": "Y5",
+        "addr_buzzer": ""
+      },
+      "id": "8e45f139"
+    },
+    {
+      "kind": "sensor",
+      "x": 60.0,
+      "y": 120.0,
+      "props": {
+        "label": "PS ชิ้นงานเข้า",
+        "address": "X2",
+        "contact": "NO",
+        "sense": "photo"
+      },
+      "id": "6c827ad2"
+    },
+    {
+      "kind": "sensor",
+      "x": 320.0,
+      "y": 160.0,
+      "props": {
+        "label": "IND โลหะ",
+        "address": "X3",
+        "contact": "NO",
+        "sense": "inductive"
+      },
+      "id": "f37f153d"
+    },
+    {
+      "kind": "pusher",
+      "x": 410.0,
+      "y": 140.0,
+      "props": {
+        "label": "ตัวดันโลหะ",
+        "address": "Y1",
+        "addr_sol_b": "",
+        "addr_ret": "X4",
+        "addr_ext": "X5",
+        "valve": "single",
+        "stroke_s": 0.4
+      },
+      "id": "fc19a129"
+    },
+    {
+      "kind": "conveyor",
+      "x": 260.0,
+      "y": 220.0,
+      "props": {
+        "label": "สายพาน",
+        "address": "Y0",
+        "length": 520,
+        "speed": 120,
+        "part_mode": "random",
+        "addr_hz": ""
+      },
+      "id": "d20bb92f"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 120.0,
+      "y": 450.0,
+      "props": {
+        "label": "โลหะ (D0)",
+        "address": "D0",
+        "digits": 3
+      },
+      "id": "25836211"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 380.0,
+      "y": 450.0,
+      "props": {
+        "label": "ทั้งหมด (D1)",
+        "address": "D1",
+        "digits": 3
+      },
+      "id": "6629df29"
+    },
+    {
+      "kind": "note",
+      "x": 820.0,
+      "y": 140.0,
+      "props": {
+        "label": "",
+        "text": "โจทย์: Start → สายพานเดิน (ไฟเขียว)\nเซนเซอร์ IND เห็นชิ้นงานโลหะ → ตัวดันดันลงถาด แล้วนับใน D0\nชิ้นพลาสติกปล่อยผ่านไป · นับชิ้นงานทั้งหมดที่ผ่าน PS ใน D1\nStop → สายพานหยุด (ไฟเหลือง)\n\nX0 Start · X1 Stop\nX2 Photo (เห็นทุกชิ้น) · X3 Inductive (โลหะ)\nX4 ตัวดันหด (a0) · X5 ตัวดันยื่น (a1)\nY0 สายพาน · Y1 ตัวดัน\nY3 แดง · Y4 เหลือง · Y5 เขียว\n\nคลิก '+ ชิ้นงาน' ซ้ายสายพานเพื่อปล่อยชิ้นงาน",
+        "size": 9,
+        "width": 320,
+        "color": "yellow"
+      },
+      "id": "5a09e349"
+    },
+    {
+      "kind": "relay",
+      "x": -180,
+      "y": 360,
+      "props": {
+        "label": "CR1",
+        "address": "Y2",
+        "addr_c1": "X6",
+        "addr_c2": "",
+        "addr_c3": "",
+        "addr_c4": ""
+      },
+      "id": "2c5d02ab"
+    }
+  ]
+}

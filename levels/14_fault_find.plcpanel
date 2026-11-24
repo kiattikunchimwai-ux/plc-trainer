@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "name": "ด่าน 14: หาจุดเสีย",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "0f86433c"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "d3e15301"
+    },
+    {
+      "kind": "motor",
+      "x": 260,
+      "y": 0,
+      "props": {
+        "label": "ปั๊มน้ำมัน",
+        "address": "Y0"
+      },
+      "id": "4bfde9f4"
+    },
+    {
+      "kind": "motor",
+      "x": 380,
+      "y": 0,
+      "props": {
+        "label": "มอเตอร์หลัก",
+        "address": "Y1"
+      },
+      "id": "225f133c"
+    },
+    {
+      "kind": "lamp",
+      "x": 270,
+      "y": 150,
+      "props": {
+        "label": "ไฟปั๊ม",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "fe7bd782"
+    },
+    {
+      "kind": "lamp",
+      "x": 390,
+      "y": 150,
+      "props": {
+        "label": "ไฟมอเตอร์หลัก",
+        "address": "Y1",
+        "color": "green"
+      },
+      "id": "0852ced9"
+    },
+    {
+      "kind": "display",
+      "x": 520,
+      "y": 20,
+      "props": {
+        "label": "Timer T0",
+        "address": "TN0",
+        "unit": "×100ms"
+      },
+      "id": "b87b4e50"
+    },
+    {
+      "kind": "note",
+      "x": 40,
+      "y": 280,
+      "props": {
+        "label": "",
+        "text": "โจทย์: เครื่องนี้มีอุปกรณ์เสีย 1 จุด (ซ่อนอยู่)\nกด Start / Stop แล้วสังเกตมอเตอร์ ไฟ และตาราง I/O\nคลิกขวาอุปกรณ์ที่คิดว่าเสีย → เลือกอาการ\n\nX0 Start · X1 Stop · Y0 ปั๊ม+ไฟปั๊ม · Y1 มอเตอร์หลัก+ไฟ (หลัง 3 วินาที)",
+        "size": 9,
+        "width": 420,
+        "color": "yellow"
+      },
+      "id": "d3d8ff8d"
+    }
+  ]
+}

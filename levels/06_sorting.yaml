@@ -1,0 +1,70 @@
+id: 06_sorting
+order: 6
+title: "ด่าน 6: คัดแยกโลหะบนสายพาน"
+title_en: "Level 6: Sorting metal on a conveyor"
+panel: panels/sorting.plcpanel
+desc: |
+  Start (X0) → สายพาน (Y0) เดิน + ไฟเขียว (Y5) · Stop (X1) → หยุด + ไฟเหลือง (Y4)
+  เซนเซอร์ Inductive (X3) เห็นชิ้นโลหะ → ตัวดัน (Y1) ดันลงถาด แล้วหดกลับ · นับโลหะใน D0
+  ชิ้นพลาสติกปล่อยผ่าน · นับชิ้นงานทั้งหมดที่ผ่าน Photo (X2) ใน D1
+desc_en: |
+  Start (X0) → conveyor (Y0) runs + green lamp (Y5) · Stop (X1) → stops + yellow lamp (Y4)
+  The inductive sensor (X3) sees a metal part → the pusher (Y1) pushes it into the bin and retracts · count metal in D0
+  Plastic parts pass through · count every part passing the photo sensor (X2) in D1
+idle: {X0: 0, X1: 0}
+reset:
+  - pulse X1 0.3
+  - waitfor X4 = 1 within 3
+cases:
+  - name: Start / Stop + ไฟสถานะ
+    name_en: "Start / Stop + status lamps"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 and Y5 = 1 within 0.5
+        msg: กด Start → สายพานเดิน + ไฟเขียว
+        msg_en: "Press Start → conveyor runs + green lamp"
+      - pulse X1 0.3
+      - do: expect Y0 = 0 and Y4 = 1 within 0.5
+        msg: กด Stop → สายพานหยุด + ไฟเหลือง
+        msg_en: "Press Stop → conveyor stops + yellow lamp"
+  - name: ชิ้นโลหะถูกดันลงถาด
+    name_en: "Metal parts are pushed into the bin"
+    steps:
+      - pulse X0 0.3
+      - wait 0.3
+      - part metal
+      - do: expect Y1 = 1 within 6
+        msg: IND เห็นโลหะ → ตัวดัน (Y1) ทำงาน
+        msg_en: "IND sees metal → pusher (Y1) activates"
+        hint: ใช้ X3 สั่ง SET Y1 แล้วใช้ Timer หรือ a1 (X5) สั่ง RST
+        hint_en: "Use X3 to SET Y1, then a timer or a1 (X5) to RST it"
+      - do: expect Y1 = 0 within 3
+        msg: ดันเสร็จแล้วตัวดันหดกลับ
+        msg_en: "After pushing, the pusher retracts"
+      - do: expect D0 >= +1 within 1
+        msg: นับชิ้นโลหะเพิ่มใน D0
+        msg_en: "Metal count increases in D0"
+        hint: "ใช้ขอบขาขึ้นของ X3 สั่ง INC D0 (หรือนับด้วย Counter แล้ว MOV ลง D0)"
+        hint_en: "Use the rising edge of X3 to INC D0 (or count with a counter and MOV it to D0)"
+      - do: expect D1 >= +1 within 1
+        msg: นับชิ้นงานทั้งหมดเพิ่มใน D1
+        msg_en: "Total count increases in D1"
+      - do: hold D0 = +1 and D1 = +1 for 0.5
+        msg: ชิ้นงาน 1 ชิ้นนับเพิ่มแค่ 1 ครั้ง
+        msg_en: "One part counts only once"
+        hint: "ถ้านับเพิ่มทีละหลายค่า ให้ใช้คำสั่งขอบขาขึ้น เช่น INCP"
+        hint_en: "If it counts up by several, use a rising-edge instruction such as INCP"
+  - name: ชิ้นพลาสติกปล่อยผ่าน
+    name_en: "Plastic parts pass through"
+    steps:
+      - pulse X0 0.3
+      - wait 0.3
+      - part plastic
+      - do: expect D1 >= +1 within 3
+        msg: Photo เห็นชิ้นงาน → นับใน D1
+        msg_en: "Photo sensor sees a part → count in D1"
+        hint: "ใช้ขอบขาขึ้นของ X2 (เช่น INCP D1)"
+        hint_en: "Use the rising edge of X2 (e.g. INCP D1)"
+      - do: hold Y1 = 0 and D0 = +0 and D1 = +1 for 4
+        msg: ชิ้นพลาสติกต้องไม่ถูกดัน และไม่ถูกนับเป็นโลหะ
+        msg_en: "Plastic parts must not be pushed or counted as metal"

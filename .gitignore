@@ -1,0 +1,36 @@
+# สร้างใหม่ได้ / ไฟล์ใหญ่
+.venv/
+build/
+dist/
+release/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# ข้อมูลเฉพาะเครื่อง / นักเรียน / รหัสครู (แฮช)
+panels/scores.json
+panels/students.json
+panels/ui_state.json
+panels/ladders/
+/คะแนน.xlsx
+.claude/settings.local.json
+
+# ภาพจับทั้งเดสก์ท็อป (ติดหน้าต่าง/งานส่วนตัว)
+docs/gx_test/0*.png
+
+# เฉลยด่านและไฟล์ที่มีเฉลย — repo นี้เป็น public (ไฟล์อยู่ในเครื่องเท่านั้น สำรองแยก)
+backup/
+tests/ladder_good.py
+tests/ladder_kit.py
+tests/test_levels.py
+tests/test_ladder_*.py
+tests/test_soft_plc.py
+tests/test_ai.py
+tests/data/gx_csv/
+gx_projects/
+tools/e2e_ladder*.py
+tools/capture_ladder_shots.py
+tools/gx_sample/make_import_csv.py
+docs/ladder_editor_test/
+docs/ladder_test/
+docs/plan-phase1.md

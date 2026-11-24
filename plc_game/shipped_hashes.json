@@ -1,0 +1,119 @@
+{
+ "levels/01_self_hold.plcpanel": [
+  "96156fbfa3a61408bf0cb24c0fef60c45cb5b740dc946a53a9ee21b9d9483a99"
+ ],
+ "levels/01_self_hold.yaml": [
+  "4985f973a8c8f76f1b73113fda8973c721d73b4c9c66b8c61db5fffa6991bbfe"
+ ],
+ "levels/02_interlock.yaml": [
+  "42968f8ecb44ff1c70cc5adb243b985da242bb14e714465177eb5b0ec1b4e97d"
+ ],
+ "levels/03_timer.plcpanel": [
+  "a5838240c7da56743c3fad1d4b1c7cba0e696d1a589030ff4a4b7a6b97c3f974"
+ ],
+ "levels/03_timer.yaml": [
+  "eb33353d3c0b20dff6e90d7b7e5e8f9a4a91b86a4897509c7b8e60a8eab5397e"
+ ],
+ "levels/04_counter.plcpanel": [
+  "42ad62f34ef3cee2df031b147f512d1a451bd4a99c289cfdf581fe6b42630266"
+ ],
+ "levels/04_counter.yaml": [
+  "de5839c397f2d52734e54ba11b07ad611c309dd113945c37065e7532af607b6d"
+ ],
+ "levels/05_cylinder_seq.yaml": [
+  "adc4797b7720289c42d90d3886b97be964ca550cb9bb8500436906d503d69835"
+ ],
+ "levels/06_sorting.yaml": [
+  "94ef262c5e9f2b46e30f30c03ed67b3485f30c9a117e4a64c3c22a3fe4048497"
+ ],
+ "levels/07_traffic.plcpanel": [
+  "92d7637051a2d95ea537de967fd8904a82a0a9650117f98feb8ad4ad815de03d"
+ ],
+ "levels/07_traffic.yaml": [
+  "32fa188bdd3e65fe2e427d793396e4b9975b0dd94b3a2be9d4ec40b591d98af7"
+ ],
+ "levels/08_garage.plcpanel": [
+  "44a31df92a8e5fabe4d0229db4470bdae317efcb0393433d2148a36a951bfc17"
+ ],
+ "levels/08_garage.yaml": [
+  "186b97d93db0701e81534411a2e20540e8784a07f77d6dad4fe91a32d87db590"
+ ],
+ "levels/09_elevator.plcpanel": [
+  "d7f88d26af7fa48afc832635a8b9d58c78194f7ac246cb9d76be603e192f032a"
+ ],
+ "levels/09_elevator.yaml": [
+  "994ae88bcb023bb019931739bf2d870ec931dc8a47dd47a4f489d6edc56fa6e3"
+ ],
+ "levels/10_mixing.plcpanel": [
+  "af4e989632f0550751d2517c2cabc354c7d854e357dc6ddfe392cef02037a4f7"
+ ],
+ "levels/10_mixing.yaml": [
+  "2566488bf5f2ef904bac49fe41c3e6fd328a8130629cdc860cebe72e948e261d"
+ ],
+ "levels/11_oven.plcpanel": [
+  "dae8f971b4ba732874a03e25343749ec667b26120a385353b6b4183f28f2de6c"
+ ],
+ "levels/11_oven.yaml": [
+  "0fdbfd16e5ec1d8b0742965cd93b0eae58dac2463c249a5e9275d914172d0646"
+ ],
+ "levels/12_parking.plcpanel": [
+  "e042c96bd59fbc5899513012b09bd720f522b121c75c21a6628cd2360ed37f7a"
+ ],
+ "levels/12_parking.yaml": [
+  "8a444b3a5684c70b01d665b07f8216be3aa1f7b86469e021799844903b615169"
+ ],
+ "levels/13_vfd.plcpanel": [
+  "4fbc27b27a426e41195f6f33af5e443bdfc99ad578cf6e3c999bd9909d24537a"
+ ],
+ "levels/13_vfd.yaml": [
+  "a283b32b9802330ec20fb7d447df5ef57989fc402760c604c739483b35f84758"
+ ],
+ "levels/14_fault_find.plcpanel": [
+  "325aca3f8a1df87bb5fe249dc96586a0dc9a5364c21e66af650d927a4ecd1faf"
+ ],
+ "levels/14_fault_find.yaml": [
+  "1a3ab0bcc834272056b87b813dd586fc8b3b9dbf8ea9d0710d00c3c708d205ba"
+ ],
+ "panels/air_system.plcpanel": [
+  "a40c42bb789ad8da48c76c7a8b7a1be70f75839b5d825bb1257109cbfc09c9ab"
+ ],
+ "panels/cylinder_AplusBplus.plcpanel": [
+  "30fc2106d0d2b5ee3225eb704b87bada8f69ae8b1ec82d1c17a00eb803d626f4"
+ ],
+ "panels/default.plcpanel": [
+  "5db395a2c1867ded5e990fd9a8623f35e468db6b61dacdd637eeba86d3c8a52d"
+ ],
+ "panels/elevator3.plcpanel": [
+  "61596204e82c220001802115a49f6385f63691e35c2bb904944a50314bb38541"
+ ],
+ "panels/garage_door.plcpanel": [
+  "8348315bf4f80695dc830daeecfbecb6d6dfee2a74e5cc653dd49177414e2d3d"
+ ],
+ "panels/mixing.plcpanel": [
+  "7a4d48479765df0be82c79ceccbd6102ccdc7195f4e6f22cd4bbdd01492884bf"
+ ],
+ "panels/parking.plcpanel": [
+  "b7c76aebeef3213dc8bb84094787819003270d493f8fd8737f6c571d66af11e0"
+ ],
+ "panels/pick_place.plcpanel": [
+  "10f314e0b60efcd6f347a96e54e8a62d9029b042a76283b16676249db168a8e4"
+ ],
+ "panels/reversing.plcpanel": [
+  "202bbb5c796a16b86e18d862d2e36bd5f4066b9715fc017af4cd2b319b83e380"
+ ],
+ "panels/sorting.plcpanel": [
+  "e5d61ae8c31c23d9127663beae3cedc60135e3f782ab7e138da302bf364d9936"
+ ],
+ "panels/star_delta.plcpanel": [
+  "306e8a32f5fc1609dcedb68f41d2bede3777d413b34d0ea255ede52e3fa439eb"
+ ],
+ "panels/tank.plcpanel": [
+  "dc67f223ee0581ac49a83c8e1ec2d4e646558cd9c3b932fd8694bfd9c9d3f3c7"
+ ],
+ "panels/traffic.plcpanel": [
+  "e49892ed8594ef1ec248241e6e0692868bd6032ab892aab2721c7b298d9c2229"
+ ],
+ "panels/vfd_conveyor.plcpanel": [
+  "5f772059a20a756b9868b560cddd84965ee29c71e28fd378fe150efbcef292c5"
+ ]
+}

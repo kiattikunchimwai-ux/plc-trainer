@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "name": "ด่าน 1: วงจรคงสถานะ",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "56410796"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "43378024"
+    },
+    {
+      "kind": "motor",
+      "x": 260,
+      "y": 0,
+      "props": {
+        "label": "มอเตอร์",
+        "address": "Y0"
+      },
+      "id": "aa56d911"
+    },
+    {
+      "kind": "lamp",
+      "x": 380,
+      "y": 0,
+      "props": {
+        "label": "RUN",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "70a0ad92"
+    },
+    {
+      "kind": "note",
+      "x": 160,
+      "y": 190,
+      "props": {
+        "label": "",
+        "text": "โจทย์: กด Start (X0) → มอเตอร์ (Y0) ทำงานค้างแม้ปล่อยปุ่ม\nกด Stop (X1) → มอเตอร์หยุด · ถ้ากด Start กับ Stop พร้อมกัน ต้องหยุด (Stop มาก่อน)\n\nX0 Start · X1 Stop (NO)\nY0 มอเตอร์ + ไฟ RUN",
+        "size": 9,
+        "width": 420,
+        "color": "yellow"
+      },
+      "id": "8682d256"
+    }
+  ]
+}

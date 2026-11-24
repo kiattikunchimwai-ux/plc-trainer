@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "name": "ด่าน 4: นับชิ้นงาน",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "9713a4b9"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "51eae056"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 220,
+      "y": 0,
+      "props": {
+        "label": "Reset",
+        "address": "X3",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "3"
+      },
+      "id": "152db59c"
+    },
+    {
+      "kind": "sensor",
+      "x": 140,
+      "y": 120,
+      "props": {
+        "label": "PS นับชิ้น",
+        "address": "X2",
+        "contact": "NO",
+        "sense": "photo"
+      },
+      "id": "183e3ca2"
+    },
+    {
+      "kind": "conveyor",
+      "x": 180,
+      "y": 220,
+      "props": {
+        "label": "สายพาน",
+        "address": "Y0",
+        "length": 400,
+        "speed": 120,
+        "part_mode": "random",
+        "addr_hz": ""
+      },
+      "id": "67133160"
+    },
+    {
+      "kind": "lamp",
+      "x": 480,
+      "y": 100,
+      "props": {
+        "label": "ครบ 5 ชิ้น",
+        "address": "Y2",
+        "color": "orange"
+      },
+      "id": "9677deb3"
+    },
+    {
+      "kind": "sevenseg",
+      "x": 480,
+      "y": 240,
+      "props": {
+        "label": "จำนวน (C0)",
+        "address": "CN0",
+        "digits": 2
+      },
+      "id": "1f2cc55c"
+    },
+    {
+      "kind": "note",
+      "x": 760,
+      "y": 140,
+      "props": {
+        "label": "",
+        "text": "โจทย์: Start → สายพาน (Y0) เดิน · Stop → หยุด\nนับชิ้นงานที่ผ่านเซนเซอร์ X2 ครบ 5 ชิ้น → ไฟครบ (Y2) ติด\nกด Reset (X3) → เริ่มนับใหม่ ไฟดับ\n\nX0 Start · X1 Stop · X2 เซนเซอร์ · X3 Reset\nY0 สายพาน · Y2 ไฟครบ 5 ชิ้น",
+        "size": 9,
+        "width": 320,
+        "color": "yellow"
+      },
+      "id": "323dc880"
+    }
+  ]
+}

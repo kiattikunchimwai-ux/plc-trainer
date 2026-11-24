@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "name": "ควบคุมระดับน้ำในถัง",
+  "devices": [
+    {
+      "kind": "selector",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Auto",
+        "address": "X0",
+        "contact": "NO",
+        "key": "1"
+      },
+      "id": "577f0686"
+    },
+    {
+      "kind": "estop",
+      "x": 100,
+      "y": 0,
+      "props": {
+        "label": "E-Stop",
+        "address": "X1",
+        "contact": "NC",
+        "key": "2"
+      },
+      "id": "0dce11ac"
+    },
+    {
+      "kind": "overload",
+      "x": 200,
+      "y": 0,
+      "props": {
+        "label": "OL ปั๊ม",
+        "address": "X2",
+        "contact": "NC",
+        "addr_motor": "Y0",
+        "trip_s": 0,
+        "key": "3"
+      },
+      "id": "2760f778"
+    },
+    {
+      "kind": "tank",
+      "x": 120,
+      "y": 200,
+      "props": {
+        "label": "ถังน้ำ",
+        "address": "Y0",
+        "addr_drain": "Y1",
+        "addr_high": "X3",
+        "addr_low": "X4",
+        "fill_rate": 12,
+        "drain_rate": 6,
+        "level0": 30,
+        "high_pct": 80,
+        "low_pct": 20
+      },
+      "id": "b15105d3"
+    },
+    {
+      "kind": "lamp",
+      "x": 320,
+      "y": 120,
+      "props": {
+        "label": "ปั๊มทำงาน",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "249efab4"
+    },
+    {
+      "kind": "lamp",
+      "x": 320,
+      "y": 240,
+      "props": {
+        "label": "น้ำต่ำ (เตือน)",
+        "address": "Y2",
+        "color": "orange"
+      },
+      "id": "c1b02825"
+    },
+    {
+      "kind": "buzzer",
+      "x": 320,
+      "y": 360,
+      "props": {
+        "label": "ออดเตือน",
+        "address": "Y3"
+      },
+      "id": "4c41ab6d"
+    },
+    {
+      "kind": "note",
+      "x": 600,
+      "y": 160,
+      "props": {
+        "label": "",
+        "text": "โจทย์: โหมด Auto → น้ำต่ำกว่า Low ให้ปั๊มเติมจนถึง High แล้วหยุด\nE-Stop หรือ OL ทริป = หยุดปั๊มทันที + ออดเตือน\n\nX0 Auto · X1 E-Stop (NC) · X2 OL (NC)\nX3 ระดับสูง · X4 ระดับต่ำ\nY0 ปั๊ม · Y1 วาล์วปล่อย · Y2 ไฟเตือน · Y3 ออด",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "d1302cac"
+    }
+  ]
+}

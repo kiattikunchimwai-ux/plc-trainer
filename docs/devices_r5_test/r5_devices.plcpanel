@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "name": "R5: อุปกรณ์นิวเมติกส์ + มอเตอร์ + รีเลย์ชุดใหม่",
+  "devices": [
+    {
+      "kind": "estop",
+      "x": -620,
+      "y": -10,
+      "props": {
+        "label": "E-Stop",
+        "address": "X12",
+        "contact": "NC"
+      },
+      "id": "8def2fc2"
+    },
+    {
+      "kind": "safety_relay",
+      "x": -500,
+      "y": 0,
+      "props": {
+        "label": "SR1",
+        "address": "X13",
+        "addr_aux": "X14",
+        "addr_reset": "Y11",
+        "link_estop": "8def2fc2"
+      },
+      "id": "9add921c"
+    },
+    {
+      "kind": "phase_relay",
+      "x": -380,
+      "y": 0,
+      "props": {
+        "label": "PR1",
+        "address": "X11",
+        "trip_s": 1.0,
+        "reset_s": 0.5
+      },
+      "id": "f7893201"
+    },
+    {
+      "kind": "relay",
+      "x": -270,
+      "y": 0,
+      "props": {
+        "label": "CR1",
+        "address": "Y6",
+        "addr_c1": "X6",
+        "addr_c2": "",
+        "addr_c3": "X7",
+        "addr_c4": ""
+      },
+      "id": "5e17bcad"
+    },
+    {
+      "kind": "latch_relay",
+      "x": -170,
+      "y": 0,
+      "props": {
+        "label": "LR1",
+        "address": "Y7",
+        "addr_reset": "",
+        "addr_c1": "X10",
+        "addr_c2": ""
+      },
+      "id": "df4bb7cf"
+    },
+    {
+      "kind": "ssr",
+      "x": -60,
+      "y": 0,
+      "props": {
+        "label": "SSR1",
+        "address": "Y10",
+        "load": "heater",
+        "load_a": 10.0
+      },
+      "id": "d1e3a338"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 60,
+      "y": 0,
+      "props": {
+        "label": "Start Y-Δ",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green"
+      },
+      "id": "c54900e0"
+    },
+    {
+      "kind": "motor_yd",
+      "x": -520,
+      "y": 230,
+      "props": {
+        "label": "M1 Y-Δ",
+        "address": "Y0",
+        "addr_star": "Y1",
+        "addr_delta": "Y2",
+        "addr_ol": "X1",
+        "fla": 15.0,
+        "accel_s": 4.0
+      },
+      "id": "0a0adf3a"
+    },
+    {
+      "kind": "cylinder",
+      "x": -170,
+      "y": 230,
+      "props": {
+        "label": "Cyl 5/3",
+        "address": "Y3",
+        "addr_sol_b": "Y4",
+        "addr_ret": "X2",
+        "addr_ext": "X3",
+        "valve": "c_closed",
+        "stroke_s": 1.0
+      },
+      "id": "43fde878"
+    },
+    {
+      "kind": "cylinder",
+      "x": 200,
+      "y": 230,
+      "props": {
+        "label": "Cyl ทางเดียว",
+        "address": "Y5",
+        "addr_sol_b": "",
+        "addr_ret": "X4",
+        "addr_ext": "X5",
+        "valve": "single",
+        "stroke_s": 0.5,
+        "actuation": "single"
+      },
+      "id": "06454142"
+    },
+    {
+      "kind": "vacuum",
+      "x": -560,
+      "y": 450,
+      "props": {
+        "label": "VAC1",
+        "address": "Y12",
+        "addr_blow": "Y13",
+        "addr_ok": "X15",
+        "addr_lift": "Y14",
+        "addr_kpa": "D60"
+      },
+      "id": "b0c908fb"
+    },
+    {
+      "kind": "dc_motor",
+      "x": -390,
+      "y": 450,
+      "props": {
+        "label": "BLDC1",
+        "address": "Y15",
+        "addr_rev": "Y16",
+        "addr_speed": "D0",
+        "addr_alarm": "X16",
+        "addr_rpm": "D2",
+        "drive": "bldc",
+        "accel_s": 1.0,
+        "decel_s": 1.0
+      },
+      "id": "9dd18094"
+    },
+    {
+      "kind": "stepper",
+      "x": -50,
+      "y": 450,
+      "props": {
+        "label": "STP1",
+        "address": "Y17",
+        "addr_start": "Y20",
+        "addr_target": "D50",
+        "addr_jog_f": "",
+        "addr_jog_r": "Y21",
+        "addr_busy": "X17",
+        "addr_home": "X20",
+        "addr_pos": "D52"
+      },
+      "id": "43de06dd"
+    }
+  ]
+}

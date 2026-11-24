@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "name": "ด่าน 3: หน่วงเวลาสตาร์ทมอเตอร์",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "4d4e8cc4"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "4961732c"
+    },
+    {
+      "kind": "motor",
+      "x": 260,
+      "y": 0,
+      "props": {
+        "label": "ปั๊มน้ำมัน",
+        "address": "Y0"
+      },
+      "id": "8b5c7e73"
+    },
+    {
+      "kind": "motor",
+      "x": 380,
+      "y": 0,
+      "props": {
+        "label": "มอเตอร์หลัก",
+        "address": "Y1"
+      },
+      "id": "799f5721"
+    },
+    {
+      "kind": "display",
+      "x": 320,
+      "y": 150,
+      "props": {
+        "label": "Timer T0",
+        "address": "TN0",
+        "unit": "×100ms"
+      },
+      "id": "837b3314"
+    },
+    {
+      "kind": "note",
+      "x": 40,
+      "y": 170,
+      "props": {
+        "label": "",
+        "text": "โจทย์: กด Start → ปั๊มน้ำมันหล่อลื่น (Y0) ทำงานทันที\nครบ 3 วินาที → มอเตอร์หลัก (Y1) ทำงาน\nกด Stop → หยุดทั้งคู่\n\nX0 Start · X1 Stop\nY0 ปั๊มน้ำมัน · Y1 มอเตอร์หลัก",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "730a837e"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+id: 02_interlock
+order: 2
+title: "ด่าน 2: กลับทางหมุนมอเตอร์ + Interlock"
+title_en: "Level 2: Reversing motor + interlock"
+panel: panels/reversing.plcpanel
+desc: |
+  กด FWD (X0) → หมุนหน้า (Y0) ค้าง · กด REV (X1) → หมุนกลับ (Y1) ค้าง · Stop (X2) → หยุด
+  ห้าม Y0 กับ Y1 ทำงานพร้อมกัน ขณะหมุนอยู่กดอีกทิศต้องไม่มีผล (ต้องกด Stop ก่อน)
+  OL (X3) เป็น NC: ปกติ = 1, ทริป = 0 → หยุดทันที
+desc_en: |
+  Press FWD (X0) → forward (Y0) latched · press REV (X1) → reverse (Y1) latched · Stop (X2) → stop
+  Y0 and Y1 must never run together; pressing the other direction while running has no effect (press Stop first)
+  OL (X3) is NC: normal = 1, tripped = 0 → stop immediately
+idle: {X0: 0, X1: 0, X2: 0, X3: 1}
+reset:
+  - pulse X2 0.3
+cases:
+  - name: หมุนหน้า
+    name_en: "Forward"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 and Y1 = 0 within 0.5
+        msg: กด FWD → หมุนหน้า (Y0) ทำงาน
+        msg_en: "Press FWD → forward (Y0) runs"
+      - do: hold Y0 = 1 and Y1 = 0 for 1.0
+        msg: ปล่อยปุ่มแล้วยังหมุนหน้าค้าง
+        msg_en: "Release the button and it keeps running forward"
+        hint: ต่อ Y0 ขนานกับ X0 (self-holding)
+        hint_en: "Put Y0 in parallel with X0 (self-holding)"
+  - name: หมุนกลับ
+    name_en: "Reverse"
+    steps:
+      - pulse X1 0.3
+      - do: expect Y1 = 1 and Y0 = 0 within 0.5
+        msg: กด REV → หมุนกลับ (Y1) ทำงาน
+        msg_en: "Press REV → reverse (Y1) runs"
+      - do: hold Y1 = 1 and Y0 = 0 for 1.0
+        msg: ปล่อยปุ่มแล้วยังหมุนกลับค้าง
+        msg_en: "Release the button and it keeps running in reverse"
+        hint: ต่อ Y1 ขนานกับ X1 (self-holding)
+        hint_en: "Put Y1 in parallel with X1 (self-holding)"
+  - name: Interlock ขณะหมุนหน้า
+    name_en: "Interlock while running forward"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: เริ่มหมุนหน้า
+        msg_en: "Start forward"
+      - pulse X1 0.3
+      - do: hold Y1 = 0 for 1.0
+        msg: ขณะหมุนหน้า กด REV ต้องไม่สั่งหมุนกลับ
+        msg_en: "While running forward, REV must not start reverse"
+        hint: ใส่หน้าสัมผัส /Y0 อนุกรมหน้าคอยล์ Y1 และ /Y1 หน้าคอยล์ Y0 (Interlock)
+        hint_en: "Put /Y0 in series before the Y1 coil and /Y1 before the Y0 coil (interlock)"
+  - name: กด Stop
+    name_en: "Press Stop"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: เริ่มหมุนหน้า
+        msg_en: "Start forward"
+      - pulse X2 0.3
+      - do: expect Y0 = 0 and Y1 = 0 within 0.5
+        msg: กด Stop → หยุดทั้งสองทิศ
+        msg_en: "Press Stop → both directions stop"
+        hint: ใช้ /X2 ต่ออนุกรมทั้งวงจร FWD และ REV
+        hint_en: "Put /X2 in series in both the FWD and REV circuits"
+  - name: OL ทริป
+    name_en: "OL trip"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: เริ่มหมุนหน้า
+        msg_en: "Start forward"
+      - set X3 0
+      - do: expect Y0 = 0 and Y1 = 0 within 0.5
+        msg: OL ทริป (X3 = 0) → มอเตอร์หยุดทันที
+        msg_en: "OL trips (X3 = 0) → the motor stops immediately"
+        hint: OL บนผังเป็น NC (ปกติ = 1) จึงใช้หน้าสัมผัส NO (X3) ต่ออนุกรม
+        hint_en: "The OL on the panel is NC (normally 1), so use an NO contact (X3) in series"
+      - set X3 1
+      - do: hold Y0 = 0 and Y1 = 0 for 1.0
+        msg: รีเซ็ต OL แล้วมอเตอร์ต้องไม่หมุนเอง
+        msg_en: "After resetting the OL the motor must not restart by itself"

@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "name": "มอเตอร์กลับทางหมุน + Interlock",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0.0,
+      "y": 0.0,
+      "props": {
+        "label": "FWD",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "4ce3c286"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110.0,
+      "y": 0.0,
+      "props": {
+        "label": "REV",
+        "address": "X1",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "2"
+      },
+      "id": "f3da880b"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 220.0,
+      "y": 0.0,
+      "props": {
+        "label": "Stop",
+        "address": "X2",
+        "contact": "NO",
+        "color": "red",
+        "key": "3"
+      },
+      "id": "21a8a6c2"
+    },
+    {
+      "kind": "overload",
+      "x": 320.0,
+      "y": 0.0,
+      "props": {
+        "label": "OL1",
+        "address": "X3",
+        "contact": "NC",
+        "addr_motor": "Y0",
+        "trip_s": 3,
+        "key": "4",
+        "reset": "manual",
+        "trip_class": "10",
+        "ir_a": 4.9
+      },
+      "id": "fac1f21e"
+    },
+    {
+      "kind": "motor_rev",
+      "x": 120.0,
+      "y": 200.0,
+      "props": {
+        "label": "มอเตอร์",
+        "address": "Y0",
+        "addr_rev": "Y1",
+        "accel_s": 0.5,
+        "decel_s": 1.0,
+        "kw": 0.37,
+        "volt": "380",
+        "fla": 1.1,
+        "rpm": 1400,
+        "start": "dol"
+      },
+      "id": "6c2b5ee9"
+    },
+    {
+      "kind": "lamp",
+      "x": 300.0,
+      "y": 180.0,
+      "props": {
+        "label": "หมุนหน้า",
+        "address": "Y0",
+        "color": "green"
+      },
+      "id": "0823bd18"
+    },
+    {
+      "kind": "lamp",
+      "x": 300.0,
+      "y": 290.0,
+      "props": {
+        "label": "หมุนกลับ",
+        "address": "Y1",
+        "color": "orange"
+      },
+      "id": "81c16b59"
+    },
+    {
+      "kind": "note",
+      "x": 640.0,
+      "y": 130.0,
+      "props": {
+        "label": "",
+        "text": "โจทย์: กด FWD → หมุนหน้าค้าง · กด REV → หมุนกลับค้าง · Stop = หยุด\nห้าม Y0 กับ Y1 ON พร้อมกันเด็ดขาด (Interlock) — ถ้าพร้อมกันจะขึ้น 'ลัดวงจร!'\nจะเปลี่ยนทิศต้องกด Stop ก่อน · OL ทริป = หยุดทันที\n\nX0 FWD · X1 REV · X2 Stop · X3 OL (NC)\nY0 หมุนหน้า · Y1 หมุนกลับ",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "8c66b288"
+    }
+  ]
+}

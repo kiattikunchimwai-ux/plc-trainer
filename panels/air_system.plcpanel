@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "name": "ระบบลม: ปั๊มลม + สวิตช์ความดัน",
+  "devices": [
+    {
+      "kind": "selector",
+      "x": 0,
+      "y": -40,
+      "props": {
+        "label": "Auto",
+        "address": "X0",
+        "contact": "NO",
+        "key": "1"
+      },
+      "id": "9d81cb0f"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": -40,
+      "props": {
+        "label": "ยื่น/หด",
+        "address": "X1",
+        "contact": "NO",
+        "color": "yellow",
+        "key": "2"
+      },
+      "id": "41004028"
+    },
+    {
+      "kind": "compressor",
+      "x": 0,
+      "y": 160,
+      "props": {
+        "label": "ปั๊มลม",
+        "address": "Y0",
+        "addr_bar": "D0",
+        "lpm": 200,
+        "tank_l": 10
+      },
+      "id": "05a39442"
+    },
+    {
+      "kind": "pressure_switch",
+      "x": 160,
+      "y": 160,
+      "props": {
+        "label": "PS ลม 6 bar",
+        "address": "X2",
+        "contact": "NO",
+        "set_bar": 6.0,
+        "diff_bar": 1.0,
+        "link_air": "05a39442"
+      },
+      "id": "45ffb6c2"
+    },
+    {
+      "kind": "cylinder",
+      "x": 430,
+      "y": 160,
+      "props": {
+        "label": "กระบอกสูบ A",
+        "address": "Y1",
+        "addr_sol_b": "",
+        "addr_ret": "X3",
+        "addr_ext": "X4",
+        "valve": "single",
+        "stroke_s": 1.0,
+        "timing": "spec",
+        "bore_mm": 40,
+        "stroke_mm": 150,
+        "pressure_bar": 6.0,
+        "load_kg": 5.0,
+        "link_air": "05a39442"
+      },
+      "id": "e932451a"
+    },
+    {
+      "kind": "lamp",
+      "x": 260,
+      "y": -40,
+      "props": {
+        "label": "ลมพร้อม",
+        "address": "Y2",
+        "color": "green"
+      },
+      "id": "2cf1d7fb"
+    },
+    {
+      "kind": "gauge",
+      "x": 360,
+      "y": -40,
+      "props": {
+        "label": "ความดัน (D0 = bar×10)",
+        "address": "D0",
+        "style": "needle",
+        "min": 0,
+        "max": 100,
+        "unit": "bar×10"
+      },
+      "id": "ce6cd108"
+    },
+    {
+      "kind": "note",
+      "x": 720,
+      "y": 60,
+      "props": {
+        "label": "",
+        "text": "โจทย์: โหมด Auto (X0) → ปั๊มลม (Y0) เดินเมื่อสวิตช์ความดัน (X2) OFF และหยุดเมื่อ ON\n(สวิตช์มี hysteresis: ON ที่ 6 bar, OFF ที่ 5 bar ปั๊มจึงไม่เปิด-ปิดถี่)\nไฟลมพร้อม (Y2) ติดเมื่อ X2 ON · กดปุ่ม X1 → กระบอกสูบยื่น/หด\nสังเกต: ทุกครั้งที่กระบอกสูบชัก ความดันลดลง · ถ้าลมต่ำกว่า 2 bar จะไม่ขยับ\n\nX0 Auto · X1 ปุ่มยื่น/หด · X2 สวิตช์ความดัน · X3 a0 · X4 a1\nY0 ปั๊มลม · Y1 โซลินอยด์ · Y2 ไฟลมพร้อม · D0 ความดัน (bar×10)",
+        "size": 9,
+        "width": 360,
+        "color": "yellow"
+      },
+      "id": "746b9bf1"
+    }
+  ]
+}

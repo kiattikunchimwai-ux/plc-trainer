@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "name": "ด่าน 11: เตาอบคุมอุณหภูมิ (Hysteresis)",
+  "devices": [
+    {
+      "kind": "selector",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Auto",
+        "address": "X0",
+        "contact": "NO",
+        "key": "1"
+      },
+      "id": "2adfeead"
+    },
+    {
+      "kind": "oven",
+      "x": 200,
+      "y": 40,
+      "props": {
+        "label": "เตาอบ",
+        "address": "Y0",
+        "addr_temp": "D0",
+        "addr_thermo": "",
+        "ambient": 120,
+        "heat_c": 300,
+        "tau_s": 15,
+        "thermo_c": 100
+      },
+      "id": "5ce0965d"
+    },
+    {
+      "kind": "gauge",
+      "x": 400,
+      "y": 40,
+      "props": {
+        "label": "อุณหภูมิ (D0)",
+        "address": "D0",
+        "style": "needle",
+        "min": 100,
+        "max": 250,
+        "unit": "°C"
+      },
+      "id": "4d88ac9c"
+    },
+    {
+      "kind": "lamp",
+      "x": 0,
+      "y": 150,
+      "props": {
+        "label": "ฮีตเตอร์ทำงาน",
+        "address": "Y0",
+        "color": "orange"
+      },
+      "id": "c2282f27"
+    },
+    {
+      "kind": "note",
+      "x": 700,
+      "y": 60,
+      "props": {
+        "label": "",
+        "text": "โจทย์: เปิด Auto (X0) → คุมอุณหภูมิเตา (D0) ให้อยู่ระหว่าง 180–200 °C\nฮีตเตอร์ (Y0) เปิดเมื่อ D0 ≤ 180 และปิดเมื่อ D0 ≥ 200 (Hysteresis)\nช่วงระหว่าง 180–200 ต้องคงสถานะเดิมไว้ — ห้ามเปิด-ปิดถี่\nปิด Auto → ฮีตเตอร์ดับทันที\n\nX0 Auto · D0 อุณหภูมิ (°C) · Y0 ฮีตเตอร์\nเตาอุ่นไว้ที่ 120 °C แล้ว",
+        "size": 9,
+        "width": 340,
+        "color": "yellow"
+      },
+      "id": "0516268c"
+    }
+  ]
+}

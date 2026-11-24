@@ -1,0 +1,66 @@
+id: 05_cylinder_seq
+order: 5
+title: "ด่าน 5: ลำดับกระบอกสูบ A+ B+ A− B−"
+title_en: "Level 5: Cylinder sequence A+ B+ A− B−"
+panel: panels/cylinder_AplusBplus.plcpanel
+desc: |
+  กด Start (X0) → A ยื่น → เมื่อ A ยื่นสุด (a1) B ยื่น → เมื่อ B ยื่นสุด (b1) A หด
+  → เมื่อ A หดสุด (a0) B หด → จบรอบแล้วหยุดรอ
+  รีดสวิตช์: X2 a0 · X3 a1 · X4 b0 · X5 b1 (อุปกรณ์บนผังส่งให้เอง) · Y0 โซลินอยด์ A · Y1 โซลินอยด์ B
+desc_en: |
+  Press Start (X0) → A extends → when A is fully out (a1) B extends → when B is fully out (b1) A retracts
+  → when A is fully in (a0) B retracts → cycle done, wait
+  Reed switches: X2 a0 · X3 a1 · X4 b0 · X5 b1 (driven by the panel devices) · Y0 solenoid A · Y1 solenoid B
+idle: {X0: 0, X1: 0}
+settle: 0.5
+reset:
+  - pulse X1 0.3
+  - waitfor X2 = 1 and X4 = 1 within 6
+cases:
+  - name: ทำงานครบ 1 รอบ
+    name_en: "One full cycle"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: "A+ : กด Start → กระบอก A ยื่น (Y0)"
+        msg_en: "A+ : press Start → cylinder A extends (Y0)"
+      - do: hold Y1 = 0 for 0.6
+        msg: ขณะ A กำลังยื่น B ต้องรอ
+        msg_en: "While A is extending, B must wait"
+        hint: ให้ B ยื่นเมื่อ a1 (X3) ON เท่านั้น
+        hint_en: "Extend B only when a1 (X3) is ON"
+      - do: expect Y1 = 1 and X3 = 1 within 2.0
+        msg: "B+ : A ยื่นสุด (a1) → กระบอก B ยื่น (Y1)"
+        msg_en: "B+ : A fully out (a1) → cylinder B extends (Y1)"
+      - do: hold Y0 = 1 and Y1 = 1 for 0.3
+        msg: ขณะ B กำลังยื่น A ต้องยื่นค้างไว้
+        msg_en: "While B is extending, A must stay extended"
+        hint: ให้ A หดเมื่อ b1 (X5) ON เท่านั้น
+        hint_en: "Retract A only when b1 (X5) is ON"
+      - do: expect Y0 = 0 and X5 = 1 within 2.5
+        msg: "A− : B ยื่นสุด (b1) → กระบอก A หด"
+        msg_en: "A− : B fully out (b1) → cylinder A retracts"
+        hint: ใช้ X5 (b1) เป็นเงื่อนไขให้ A หด เช่น ใช้ M เก็บขั้นตอน (Step) แทนการต่อตรง
+        hint_en: "Use X5 (b1) as the condition for A to retract, e.g. store the step in M bits instead of wiring directly"
+      - do: hold Y1 = 1 for 0.3
+        msg: ขณะ A กำลังหด B ต้องยื่นค้างไว้
+        msg_en: "While A is retracting, B must stay extended"
+        hint: ให้ B หดเมื่อ a0 (X2) ON เท่านั้น
+        hint_en: "Retract B only when a0 (X2) is ON"
+      - do: expect Y1 = 0 and X2 = 1 within 2.5
+        msg: "B− : A หดสุด (a0) → กระบอก B หด"
+        msg_en: "B− : A fully in (a0) → cylinder B retracts"
+      - waitfor X4 = 1 within 2.5
+      - do: hold Y0 = 0 and Y1 = 0 for 1.5
+        msg: จบรอบแล้วหยุดรอ ไม่วนเอง
+        msg_en: "After the cycle it waits, no automatic repeat"
+        hint: เคลียร์ขั้นตอนเมื่อจบรอบ และเริ่มรอบใหม่เฉพาะเมื่อกด Start
+        hint_en: "Clear the steps at the end of the cycle and start a new one only when Start is pressed"
+  - name: เริ่มรอบใหม่ได้
+    name_en: "A new cycle can start"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 within 0.5
+        msg: กด Start อีกครั้ง → เริ่มรอบใหม่ (A ยื่น)
+        msg_en: "Press Start again → new cycle (A extends)"
+      - waitfor X2 = 1 and X4 = 1 and Y0 = 0 and Y1 = 0 within 8

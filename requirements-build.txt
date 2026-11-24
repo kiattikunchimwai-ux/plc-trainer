@@ -1,0 +1,2 @@
+# ใช้เฉพาะตอนสร้าง .exe (tools/build_exe.py) — ไม่ต้องมีตอนรันโปรแกรม
+pyinstaller>=6.10

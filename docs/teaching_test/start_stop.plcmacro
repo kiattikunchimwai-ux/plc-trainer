@@ -1,0 +1,61 @@
+{
+ "version": 1,
+ "name": "การกดที่บันทึก",
+ "panel": "01_self_hold.plcpanel",
+ "idle": {
+  "X0": 0,
+  "X1": 0
+ },
+ "duration": 4.094,
+ "events": [
+  {
+   "t": 0.0,
+   "addr": "Y0",
+   "value": 0,
+   "word": false,
+   "io": "out"
+  },
+  {
+   "t": 0.625,
+   "addr": "X0",
+   "value": 1,
+   "word": false,
+   "io": "in"
+  },
+  {
+   "t": 0.734,
+   "addr": "Y0",
+   "value": 1,
+   "word": false,
+   "io": "out"
+  },
+  {
+   "t": 0.953,
+   "addr": "X0",
+   "value": 0,
+   "word": false,
+   "io": "in"
+  },
+  {
+   "t": 2.578,
+   "addr": "X1",
+   "value": 1,
+   "word": false,
+   "io": "in"
+  },
+  {
+   "t": 2.703,
+   "addr": "Y0",
+   "value": 0,
+   "word": false,
+   "io": "out"
+  },
+  {
+   "t": 2.89,
+   "addr": "X1",
+   "value": 0,
+   "word": false,
+   "io": "in"
+  }
+ ]
+}

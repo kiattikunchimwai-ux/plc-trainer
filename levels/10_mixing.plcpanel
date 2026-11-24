@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "name": "ด่าน 10: ถังผสมสาร",
+  "devices": [
+    {
+      "kind": "pushbutton",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "label": "Start",
+        "address": "X0",
+        "contact": "NO",
+        "color": "green",
+        "key": "1"
+      },
+      "id": "167b07a7"
+    },
+    {
+      "kind": "pushbutton",
+      "x": 110,
+      "y": 0,
+      "props": {
+        "label": "Stop",
+        "address": "X1",
+        "contact": "NO",
+        "color": "red",
+        "key": "2"
+      },
+      "id": "57b0d9f2"
+    },
+    {
+      "kind": "tank",
+      "x": 60,
+      "y": 220,
+      "props": {
+        "label": "ถังผสม",
+        "address": "Y0",
+        "addr_drain": "Y1",
+        "addr_high": "X2",
+        "addr_low": "X3",
+        "fill_rate": 25,
+        "drain_rate": 25,
+        "level0": 10,
+        "high_pct": 80,
+        "low_pct": 20
+      },
+      "id": "8174da7c"
+    },
+    {
+      "kind": "motor",
+      "x": 260,
+      "y": 120,
+      "props": {
+        "label": "มอเตอร์กวน",
+        "address": "Y2"
+      },
+      "id": "7798c5cf"
+    },
+    {
+      "kind": "oven",
+      "x": 270,
+      "y": 300,
+      "props": {
+        "label": "ฮีตเตอร์",
+        "address": "Y3",
+        "addr_temp": "D30",
+        "addr_thermo": "",
+        "ambient": 25,
+        "heat_c": 120,
+        "tau_s": 8,
+        "thermo_c": 100
+      },
+      "id": "d3e21ffd"
+    },
+    {
+      "kind": "gauge",
+      "x": 450,
+      "y": 300,
+      "props": {
+        "label": "อุณหภูมิ (D30)",
+        "address": "D30",
+        "style": "needle",
+        "min": 0,
+        "max": 150,
+        "unit": "°C"
+      },
+      "id": "7920f5e8"
+    },
+    {
+      "kind": "message",
+      "x": 420,
+      "y": 120,
+      "props": {
+        "label": "ขั้นตอน (D1)",
+        "address": "D1",
+        "messages": "0=พร้อม;1=เติมสาร;2=กวน+ให้ความร้อน;3=ปล่อยออก;4=เสร็จ"
+      },
+      "id": "014fa818"
+    },
+    {
+      "kind": "note",
+      "x": 760,
+      "y": 180,
+      "props": {
+        "label": "",
+        "text": "โจทย์: Start → เติมสาร (Y0) จนถึงระดับสูง → กวน (Y2) + ให้ความร้อน (Y3)\nจนอุณหภูมิ D30 ≥ 60 °C แล้วกวนต่ออีก 5 วินาที → ปล่อยออก (Y1) จนถึงระดับต่ำ\nแสดงขั้นตอนปัจจุบันลง D1 (0–4)\n\nX0 Start · X1 Stop · X2 ระดับสูง · X3 ระดับต่ำ\nY0 ปั๊มเติม · Y1 วาล์วปล่อย · Y2 มอเตอร์กวน · Y3 ฮีตเตอร์\nD30 อุณหภูมิ (°C) · D1 ขั้นตอน",
+        "size": 9,
+        "width": 300,
+        "color": "yellow"
+      },
+      "id": "a79fb907"
+    }
+  ]
+}

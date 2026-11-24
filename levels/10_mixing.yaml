@@ -1,0 +1,80 @@
+id: 10_mixing
+order: 10
+title: "ด่าน 10: ถังผสมสาร + ให้ความร้อน"
+title_en: "Level 10: Mixing tank + heating"
+panel: 10_mixing.plcpanel
+desc: |
+  กด Start (X0) → เติมสาร (Y0) จนถึงระดับสูง (X2)
+  → กวน (Y2) + ให้ความร้อน (Y3) จนอุณหภูมิ D30 ≥ 60 °C แล้วปิดฮีตเตอร์ กวนต่ออีก 5 วินาที
+  → ปล่อยออก (Y1) จนต่ำกว่าระดับต่ำ (X3 = 0) แล้วจบ
+  แสดงขั้นตอนที่ D1: 1 = เติม, 2 = กวน/ให้ความร้อน, 3 = ปล่อยออก, 4 = เสร็จ · Stop (X1) = หยุดทุกอย่าง D1 = 0
+desc_en: |
+  Press Start (X0) → fill (Y0) up to the high level (X2)
+  → stir (Y2) + heat (Y3) until D30 ≥ 60 °C, then heater off and stir 5 more seconds
+  → drain (Y1) until below the low level (X3 = 0), then finish
+  Show the step in D1: 1 = fill, 2 = stir/heat, 3 = drain, 4 = done · Stop (X1) = stop everything, D1 = 0
+idle: {X0: 0, X1: 0}
+reset:
+  - pulse X1 0.3
+cases:
+  - name: ลำดับการผสม
+    name_en: "Mixing sequence"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 and Y1 = 0 within 0.5
+        msg: กด Start → เปิดปั๊มเติมสาร (Y0)
+        msg_en: "Press Start → fill pump on (Y0)"
+      - do: expect D1 = 1 within 0.5
+        msg: ขั้นตอนที่ D1 = 1 (เติม)
+        msg_en: "Step D1 = 1 (fill)"
+        hint: "เช่น MOV K1 D1 ตอนเข้าขั้นเติม"
+        hint_en: "e.g. MOV K1 D1 when entering the fill step"
+      - do: expect X2 = 1 within 5
+        msg: เติมจนถึงระดับสูง (X2)
+        msg_en: "Fill up to the high level (X2)"
+      - do: expect Y0 = 0 and Y2 = 1 and Y3 = 1 within 0.5
+        msg: ถึงระดับสูง → หยุดเติม แล้วกวน (Y2) + ให้ความร้อน (Y3)
+        msg_en: "High level → stop filling, then stir (Y2) + heat (Y3)"
+      - do: expect D1 = 2 within 0.5
+        msg: ขั้นตอนที่ D1 = 2
+        msg_en: "Step D1 = 2"
+      - do: expect D30 >= 60 within 8
+        msg: ให้ความร้อนจนอุณหภูมิ D30 ถึง 60 °C
+        msg_en: "Heat until D30 reaches 60 °C"
+      - do: expect Y3 = 0 within 0.5
+        msg: ถึง 60 °C → ปิดฮีตเตอร์
+        msg_en: "60 °C reached → heater off"
+        hint: "ใช้คำสั่งเปรียบเทียบ เช่น [>= D30 K60] เปลี่ยนขั้นตอน"
+        hint_en: "Use a compare instruction such as [>= D30 K60] to change step"
+      - do: hold Y2 = 1 and Y1 = 0 for 4.0
+        msg: กวนต่ออีกประมาณ 5 วินาที (ยังไม่ปล่อยออก)
+        msg_en: "Keep stirring about 5 more seconds (no draining yet)"
+        hint: เริ่มจับเวลา 5 วินาทีหลังอุณหภูมิถึง 60 °C
+        hint_en: "Start a 5-second timer once 60 °C is reached"
+      - do: expect Y2 = 0 and Y1 = 1 within 1.6
+        msg: ครบ 5 วินาที → หยุดกวน เปิดวาล์วปล่อย (Y1)
+        msg_en: "After 5 s → stop stirring, open the drain valve (Y1)"
+      - do: expect D1 = 3 within 0.5
+        msg: ขั้นตอนที่ D1 = 3 (ปล่อยออก)
+        msg_en: "Step D1 = 3 (drain)"
+      - do: expect X3 = 0 within 5
+        msg: ปล่อยจนต่ำกว่าระดับต่ำ (X3 = 0)
+        msg_en: "Drain until below the low level (X3 = 0)"
+      - do: expect Y1 = 0 and D1 = 4 within 0.5
+        msg: ระดับต่ำ → ปิดวาล์ว และ D1 = 4 (เสร็จ)
+        msg_en: "Low level → close the valve and D1 = 4 (done)"
+  - name: กด Stop ระหว่างทำงาน
+    name_en: "Stop while running"
+    steps:
+      - pulse X0 0.3
+      - do: expect Y0 = 1 and D1 = 1 within 0.5
+        msg: "ก่อนกด Stop เครื่องต้องทำงานอยู่ (Y0 = 1, D1 = 1)"
+        msg_en: "Before Stop, the machine must be running (Y0 = 1, D1 = 1)"
+      - wait 0.7
+      - pulse X1 0.3
+      - do: expect Y0 = 0 and Y1 = 0 and Y2 = 0 and Y3 = 0 within 0.5
+        msg: กด Stop → ปิดปั๊ม วาล์ว มอเตอร์กวน และฮีตเตอร์ทั้งหมด
+        msg_en: "Press Stop → pump, valve, mixer and heater all off"
+      - do: expect D1 = 0 within 0.5
+        msg: Stop → D1 = 0 (พร้อม)
+        msg_en: "Stop → D1 = 0 (ready)"
