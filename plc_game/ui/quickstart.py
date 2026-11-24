@@ -118,7 +118,7 @@ class QuickStartDialog(QDialog):
             side.addWidget(b)
         side.addStretch(1)
         self.cb_show = QCheckBox(tr("แสดงหน้านี้ทุกครั้งที่เปิดโปรแกรม"))
-        self.cb_show.setChecked(bool(state.load().get("quickstart", True)))
+        self.cb_show.setChecked(bool(state.load().get("quickstart", False)))
         self.cb_show.toggled.connect(lambda on: state.update(quickstart=on))
         side.addWidget(self.cb_show)
         sw = QWidget()

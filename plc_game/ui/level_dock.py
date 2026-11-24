@@ -117,7 +117,7 @@ class LevelPanel(QWidget):
 
         lay = QVBoxLayout(self)
         lay.setContentsMargins(6, 6, 6, 6)
-        self.lbl_title = QLabel(tr("ยังไม่ได้เปิดด่าน — เลือกด่านที่แท็บ ด่าน / ภารกิจ"))
+        self.lbl_title = QLabel(tr("ยังไม่ได้เปิดด่าน — คลิก 1 เลือกด่าน ที่แถบขั้นตอนด้านบน"))
         self.lbl_title.setWordWrap(True)
         self.lbl_title.setStyleSheet("font-size:11pt; font-weight:bold;")
         self.lbl_desc = QLabel()
@@ -127,6 +127,7 @@ class LevelPanel(QWidget):
         lay.addWidget(self.lbl_desc)
         row = QHBoxLayout()
         self.btn_check = QPushButton(tr("▶  ตรวจคำตอบ"))
+        self.btn_check.setObjectName("Primary")
         self.btn_check.setMinimumHeight(34)
         self.btn_check.clicked.connect(self.start_requested)
         self.btn_stop = QPushButton(tr("⏹  หยุด"))

@@ -77,7 +77,7 @@ def test_pane_handle_and_badge(app, tmp_state):
 def test_main_window_shell(app, tmp_state):
     from plc_game.ui.main_window import MainWindow
     w = MainWindow({"backend": "mock", "xy_base": 8})
-    assert w.side_l.is_open and w.side_r.is_open               # ครั้งแรก กางทั้งสองฝั่ง
+    assert not w.side_l.is_open and w.side_r.is_showing("level")   # ครั้งแรก: โล่ง เหลือแผงด่าน
     w.show_iolist()
     assert w.d_iolist.isVisible() and w.side_l.current == "iolist"
     w.show_levels()

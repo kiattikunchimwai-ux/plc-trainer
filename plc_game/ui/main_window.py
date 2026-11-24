@@ -10,12 +10,12 @@ import time
 from collections import deque
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QObject, Qt, QTimer
+from PySide6.QtCore import QEvent, QObject, QPoint, Qt, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QAbstractSpinBox, QApplication, QCheckBox, QComboBox, QDialog, QDockWidget, QDoubleSpinBox, QFileDialog,
     QFormLayout, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox,
-    QPlainTextEdit, QPushButton, QScrollArea, QSpinBox, QSplitter, QStackedWidget, QTabWidget, QTextEdit,
+    QPlainTextEdit, QPushButton, QScrollArea, QSizePolicy, QSpinBox, QSplitter, QStackedWidget, QTabWidget, QTextEdit,
     QToolButton, QVBoxLayout, QWidget, QWidgetAction,
 )
 
@@ -36,6 +36,7 @@ from .tutorial import TStep, TutorialOverlay
 from .sound import Sounds
 from .support_dlg import SupportDialog, SupportToast
 from .fault_dock import FaultPanel
+from .flow_bar import FlowBar
 from .iolist_dock import IOListPanel
 from .ladder_view import LadderView
 from .level_dock import LevelPanel, stars_text
@@ -89,21 +90,43 @@ def ribbon_group(title: str, widgets_grid) -> QFrame:
     f = QFrame()
     f.setObjectName("RibbonGroup")
     v = QVBoxLayout(f)
-    v.setContentsMargins(6, 6, 6, 0)
-    v.setSpacing(4)
+    v.setContentsMargins(5, 4, 5, 4)
     g = QGridLayout()
-    g.setHorizontalSpacing(6)
+    g.setHorizontalSpacing(4)
+    g.setVerticalSpacing(3)
     for r, row in enumerate(widgets_grid):
         for c, w in enumerate(row):
             if w is not None:
-                g.addWidget(w, r, c)
+                tall = w.property("tall") and r + 1 < len(widgets_grid) and widgets_grid[r + 1][c] is None
+                g.addWidget(w, r, c, 2 if tall else 1, 1)
     v.addLayout(g)
     v.addStretch(1)
-    t = QLabel(title)
-    t.setObjectName("RibbonGroupTitle")
-    t.setAlignment(Qt.AlignCenter)
-    v.addWidget(t)
+    f.setToolTip(title)             # ชื่อกลุ่มอยู่ใน tooltip — แถบเตี้ยลง เหลือที่ให้ผัง
     return f
+
+
+def make_tall(b: QToolButton):
+    """ปุ่มใหญ่ 2 แถวใน ribbon."""
+    b.setProperty("tall", True)
+    b.setSizePolicy(b.sizePolicy().horizontalPolicy(), QSizePolicy.Expanding)
+
+
+class _RibbonPage(QScrollArea):
+    """หน้าใน ribbon — จอแคบเลื่อนซ้ายขวาได้ด้วยล้อเมาส์ แทนการบังคับหน้าต่างให้กว้าง."""
+
+    def wheelEvent(self, e):
+        bar = self.horizontalScrollBar()
+        bar.setValue(bar.value() - e.angleDelta().y())
+
+
+def ribbon_page(w: QWidget) -> QScrollArea:
+    a = _RibbonPage()
+    a.setFrameShape(QFrame.NoFrame)
+    a.setWidgetResizable(True)
+    a.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    w.setMinimumHeight(1)          # ให้สูงเท่าแถบเสมอ (ไม่งั้นแถวล่างโดนตัด)
+    a.setWidget(w)
+    return a
 
 
 def tool_button(text: str, checkable=False) -> QToolButton:
@@ -112,6 +135,9 @@ def tool_button(text: str, checkable=False) -> QToolButton:
     b.setCheckable(checkable)
     b.setToolButtonStyle(Qt.ToolButtonTextOnly)
     return b
+
+
+UI_REV = 2          # เพิ่มเมื่อจัดหน้าตาใหม่ — แผงซ้าย/ประวัติคำสั่งกลับค่าเริ่มต้น 1 ครั้ง
 
 
 class _KeyFilter(QObject):
@@ -223,6 +249,10 @@ class MainWindow(QMainWindow):
         self.btn_split.setChecked(bool(ui.get("split")))
         self.btn_large.setChecked(bool(ui.get("large")))
         self.set_ribbon_collapsed(bool(ui.get("ribbon_collapsed")), save=False)
+        sid = ui.get("student")
+        self.levelp.student = sid if any(s.sid == sid for s in classroom.load_students()) else scores.GUEST
+        if not ui.get("exam"):
+            self._shelve_free_ladder()
         self._set_student(ui.get("student") or scores.GUEST, save=False)
         QShortcut(QKeySequence("F11"), self, activated=lambda: self.set_hmi(not self.hmi))
         QShortcut(QKeySequence("Escape"), self, activated=lambda: self.hmi and self.set_hmi(False))
@@ -234,14 +264,14 @@ class MainWindow(QMainWindow):
         self.log(tr("PLC Trainer พร้อมใช้งาน — พิมพ์ HELP เพื่อดูคำสั่ง"))
 
     # ================= layout =================
-    RIBBON_H = 128
+    RIBBON_H = 96               # คิดใหม่จากเนื้อหาใน _apply_ribbon_height
 
     def _build_topbar(self) -> QFrame:
         bar = QFrame()
         bar.setObjectName("TopBar")
         h = QHBoxLayout(bar)
-        h.setContentsMargins(10, 5, 10, 5)
-        h.setSpacing(10)
+        h.setContentsMargins(8, 2, 8, 2)
+        h.setSpacing(8)
         logo = QLabel("⚡ PLC Trainer")
         logo.setObjectName("Logo")
         h.addWidget(logo)
@@ -250,7 +280,7 @@ class MainWindow(QMainWindow):
         seg = QFrame()
         seg.setObjectName("Pill")
         sl = QHBoxLayout(seg)
-        sl.setContentsMargins(3, 3, 3, 3)
+        sl.setContentsMargins(2, 2, 2, 2)
         sl.setSpacing(2)
         self.btn_run = QToolButton()
         self.btn_run.setObjectName("Seg")
@@ -273,7 +303,7 @@ class MainWindow(QMainWindow):
         pill = QFrame()
         pill.setObjectName("Pill")
         pl = QHBoxLayout(pill)
-        pl.setContentsMargins(8, 3, 3, 3)
+        pl.setContentsMargins(8, 2, 2, 2)
         pl.setSpacing(6)
         self.cb_backend = QComboBox()
         self.cb_backend.addItem("GX Simulator3 (SLMP)", "slmp")
@@ -288,7 +318,7 @@ class MainWindow(QMainWindow):
         self.sp_port.setValue(int(self.cfg.get("port", 5511)))
         net = QToolButton()
         net.setText("⚙")
-        net.setToolTip(tr("ตั้งค่า Host / Port ของ GX Simulator3"))
+        net.setToolTip(tr("ตั้งค่า Host / Port ของ GX Simulator3 และรอบอ่านข้อมูล"))
         net.setPopupMode(QToolButton.InstantPopup)
         menu = QMenu(net)
         box = QWidget()
@@ -296,6 +326,7 @@ class MainWindow(QMainWindow):
         f.setContentsMargins(10, 8, 10, 8)
         f.addRow("Host", self.ed_host)
         f.addRow("Port", self.sp_port)
+        self._net_form = f
         act = QWidgetAction(menu)
         act.setDefaultWidget(box)
         menu.addAction(act)
@@ -312,6 +343,7 @@ class MainWindow(QMainWindow):
 
         self.lbl_doc = QLabel()
         self.lbl_doc.setObjectName("DocName")
+        self.lbl_doc.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         h.addWidget(self.lbl_doc, 1)
         self.lbl_exam = QLabel()
         self.lbl_exam.setObjectName("ExamClock")
@@ -342,9 +374,17 @@ class MainWindow(QMainWindow):
             state.update(ribbon_collapsed=on)
 
     def _apply_ribbon_height(self):
-        scale = 1.25 if self.btn_large.isChecked() else 1.0
         tab_h = self.ribbon.tabBar().sizeHint().height() + 4
-        self.ribbon.setFixedHeight(tab_h if self.ribbon_collapsed else round(self.RIBBON_H * scale))
+        # สูงเท่าเนื้อหาจริงของหน้าที่สูงสุด — ปุ่มไม่โดนบีบจนทับกันเมื่อฟอนต์/scale ของจอเปลี่ยน
+        pages = [self.ribbon.widget(i).widget() for i in range(self.ribbon.count())]
+        for w in pages:
+            w.ensurePolished()
+            for g in w.findChildren(QFrame, "RibbonGroup"):
+                g.layout().invalidate()
+            w.layout().invalidate()
+        h = max(w.layout().sizeHint().height() for w in pages)
+        self.RIBBON_H = tab_h + h
+        self.ribbon.setFixedHeight(tab_h if self.ribbon_collapsed else tab_h + h + 8)
 
     def _on_ribbon_tab_clicked(self, _i):
         if self.ribbon_collapsed:            # คลิกแท็บตอนยุบ = กางกลับ
@@ -382,7 +422,7 @@ class MainWindow(QMainWindow):
         self.b_undo.setEnabled(False)
         self.b_redo.setEnabled(False)
         b_scene = tool_button(tr("🏭  ฉาก\nตัวอย่าง"))
-        b_scene.setMinimumHeight(52)
+        make_tall(b_scene)
         b_scene.setToolTip(tr("เปิดหน้าเริ่มต้น: ผังล่าสุด + ฉากโรงงานสำเร็จรูป 13 ฉาก"))
         b_scene.clicked.connect(self.show_quickstart)
         h.addWidget(ribbon_group(tr("ผังอุปกรณ์"), [
@@ -409,7 +449,7 @@ class MainWindow(QMainWindow):
         self.sp_poll.setRange(20, 1000)
         self.sp_poll.setSuffix(" ms")
         self.sp_poll.setValue(int(self.cfg.get("poll_ms", 50)))
-        h.addWidget(ribbon_group(tr("การอ่านข้อมูล"), [[QLabel(tr("รอบอ่าน"))], [self.sp_poll]]))
+        self._net_form.addRow(tr("รอบอ่าน"), self.sp_poll)      # อยู่ในเมนู ⚙ ข้างช่องเลือก PLC
 
         self.btn_pause = tool_button(tr("⏸  หยุดกราฟ"), checkable=True)
         self.btn_pause.toggled.connect(self._set_paused)
@@ -425,15 +465,11 @@ class MainWindow(QMainWindow):
             [QLabel(tr("ช่วงเวลา")), self.sp_window],
         ]))
         b_tut = tool_button(tr("🎓  บทเรียน\nนำทาง"))
-        b_tut.setMinimumHeight(52)
+        make_tall(b_tut)
         b_tut.setToolTip(tr("พาทำทีละขั้น: เชื่อม PLC → เปิดด่าน 1 → กดปุ่ม → ดูกราฟ → ตรวจคำตอบ (พิมพ์ TUTORIAL ก็ได้)"))
         b_tut.clicked.connect(self.start_tutorial)
-        b_sup = tool_button(tr("☕  สนับสนุน\nผู้พัฒนา"))
-        b_sup.setMinimumHeight(52)
-        b_sup.setToolTip(tr("โปรแกรมนี้ใช้ฟรี — ร่วมสนับสนุนด้วยพร้อมเพย์/ช่องทางอื่น (พิมพ์ SUPPORT ก็ได้)"))
-        b_sup.clicked.connect(self.show_support)
         self.b_lang = tool_button("🌐  ภาษา\nLanguage")    # i18n: skip (สองภาษาเสมอ)
-        self.b_lang.setMinimumHeight(52)
+        make_tall(self.b_lang)
         self.b_lang.setToolTip("ไทย / English — เปลี่ยนแล้วเปิดโปรแกรมใหม่ (restart required)")   # i18n: skip
         lang_menu = QMenu(self.b_lang)
         for code, name in i18n.LANGS.items():
@@ -442,18 +478,18 @@ class MainWindow(QMainWindow):
         self.b_lang.setMenu(lang_menu)
         self.b_lang.setPopupMode(QToolButton.InstantPopup)
         b_about = tool_button("ℹ")              # ปุ่มแคบ — ribbon ภาษาอังกฤษเต็มแล้ว (ป้ายยาวจะโดนตัดเป็น …)
-        b_about.setMinimumHeight(52)
+        make_tall(b_about)
         b_about.setFixedWidth(34)
         b_about.setToolTip(tr("เวอร์ชัน · โฟลเดอร์ข้อมูล · เช็กเวอร์ชันใหม่ (พิมพ์ ABOUT ก็ได้)"))
         b_about.clicked.connect(self.show_about)
-        h.addWidget(ribbon_group(tr("ช่วยเหลือ"), [[b_tut, b_sup, self.b_lang, b_about]]))
+        h.addWidget(ribbon_group(tr("ช่วยเหลือ"), [[b_tut, self.b_lang, b_about]]))
         h.addStretch(1)
-        self.ribbon.addTab(home, tr("หน้าแรก"))
-        self.ribbon.addTab(self._build_edit_tab(), tr("แก้ไขผัง"))
-        self.ribbon.addTab(self._build_level_tab(), tr("ด่าน / ภารกิจ"))
-        self.ribbon.addTab(self._build_teacher_tab(), tr("ครู"))
-        self.ribbon.addTab(self._build_ai_tab(), tr("AI วิเคราะห์"))
-        self.ribbon.addTab(self._build_teach_tab(), tr("สื่อการสอน"))
+        self.ribbon.addTab(ribbon_page(home), tr("หน้าแรก"))
+        self.ribbon.addTab(ribbon_page(self._build_edit_tab()), tr("แก้ไขผัง"))
+        self.ribbon.addTab(ribbon_page(self._build_level_tab()), tr("ด่าน / ภารกิจ"))
+        self.ribbon.addTab(ribbon_page(self._build_teacher_tab()), tr("ครู"))
+        self.ribbon.addTab(ribbon_page(self._build_ai_tab()), tr("AI วิเคราะห์"))
+        self.ribbon.addTab(ribbon_page(self._build_teach_tab()), tr("สื่อการสอน"))
         head = QWidget()
         hv = QVBoxLayout(head)
         hv.setContentsMargins(0, 0, 0, 0)
@@ -470,7 +506,7 @@ class MainWindow(QMainWindow):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
         self.btn_edit2 = tool_button(tr("✎  โหมด\nแก้ไขผัง"), checkable=True)
-        self.btn_edit2.setMinimumHeight(52)
+        make_tall(self.btn_edit2)
         self.btn_edit2.toggled.connect(self.set_edit_mode)
         b_all = tool_button(tr("⬚  เลือกทั้งหมด"))
         b_all.setToolTip(tr("Ctrl+A (คลิกที่ผังก่อน)"))
@@ -544,7 +580,7 @@ class MainWindow(QMainWindow):
         b_reload.clicked.connect(self._fill_levels)
         h.addWidget(ribbon_group(tr("เลือกด่าน"), [[self.cb_level, b_open], [None, b_reload]]))
         self.b_check = tool_button(tr("▶  ตรวจคำตอบ"))
-        self.b_check.setMinimumHeight(52)
+        make_tall(self.b_check)
         self.b_check.setToolTip(tr("ตัวตรวจจะกดปุ่มตามลำดับแล้วดูผล Output (ไม่ดูรูปแบบ ladder)"))
         self.b_check.clicked.connect(self.start_check)
         b_stop = tool_button(tr("⏹  หยุดตรวจ"))
@@ -552,10 +588,9 @@ class MainWindow(QMainWindow):
         b_res = tool_button(tr("☰  ผลตรวจ"))
         b_res.clicked.connect(self.show_levels)
         h.addWidget(ribbon_group(tr("ตรวจคำตอบ"), [[self.b_check, b_stop], [None, b_res]]))
-        tip = QLabel(tr("ขั้นตอน: เปิดด่าน → เขียน ladder ใน GX Works3 ตาม I/O ของโจทย์ → Write ลง PLC\n"
-                     "→ เชื่อมต่อ → ▶ ตรวจคำตอบ · ตรวจจากผล I/O เท่านั้น เขียนแบบไหนก็ได้ที่ทำงานถูก\n"
-                     "ผ่านทุกข้อ = ★★★ · ≥ 70% = ★★ · ≥ 40% = ★"))
-        tip.setStyleSheet(f"color:{theme.TEXT_DIM}; padding:6px 12px;")
+        tip = QLabel(tr("ตรวจจากผล I/O เท่านั้น เขียนแบบไหนก็ได้ที่ทำงานถูก\n"
+                        "ผ่านทุกข้อ = ★★★ · ≥ 70% = ★★ · ≥ 40% = ★"))
+        tip.setStyleSheet(f"color:{theme.TEXT_DIM}; padding:0 10px;")
         h.addWidget(tip)
         h.addStretch(1)
         return tab
@@ -567,7 +602,7 @@ class MainWindow(QMainWindow):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
         self.b_ab = tool_button(tr("📏  เคอร์เซอร์\nA / B"), checkable=True)
-        self.b_ab.setMinimumHeight(52)
+        make_tall(self.b_ab)
         self.b_ab.setToolTip(tr("เส้น A/B ลากได้บนกราฟ วัดช่วงเวลา Δt (ปล่อยใกล้ขอบสัญญาณ = ดูดเข้าขอบ) · กราฟหยุดให้อัตโนมัติ"))
         self.b_ab.toggled.connect(self.set_ab_cursors)
         b_png, b_csv = tool_button(tr("🖼  กราฟเป็น PNG")), tool_button(tr("📄  ข้อมูลเป็น CSV"))
@@ -575,11 +610,11 @@ class MainWindow(QMainWindow):
         b_csv.clicked.connect(lambda: self.export_chart("csv"))
         h.addWidget(ribbon_group(tr("กราฟ"), [[self.b_ab, b_png], [None, b_csv]]))
         b_wire = tool_button(tr("🔌  วงจร\nต่อสาย"))
-        b_wire.setMinimumHeight(52)
+        make_tall(b_wire)
         b_wire.setToolTip(tr("แบบวงจรต่อสาย PLC จากผังปัจจุบัน (X/Y, S/S ตามเซนเซอร์ NPN/PNP) + Export PNG/PDF"))
         b_wire.clicked.connect(self.show_wiring)
         b_know = tool_button(tr("📘  ใบความรู้\nอุปกรณ์"))
-        b_know.setMinimumHeight(52)
+        make_tall(b_know)
         b_know.setToolTip(tr("หลักการทำงาน การต่อสาย ข้อควรระวัง และสเปก — เลือกอุปกรณ์บนผังก่อนเพื่อเปิดหน้านั้น"))
         b_know.clicked.connect(lambda: self.show_knowledge())
         h.addWidget(ribbon_group(tr("อุปกรณ์"), [[b_wire, b_know], [None, None]]))
@@ -587,7 +622,7 @@ class MainWindow(QMainWindow):
         self.b_play = tool_button(tr("▶  เล่นซ้ำ"), checkable=True)
         b_mopen, b_msave = tool_button(tr("📂  เปิด")), tool_button(tr("💾  บันทึก"))
         self.b_mlevel = tool_button(tr("🧩  สร้างด่าน\nจากการกด"))
-        self.b_mlevel.setMinimumHeight(52)
+        make_tall(self.b_mlevel)
         self.b_mlevel.setToolTip(tr("แปลงการกดที่บันทึก + output ที่ PLC ตอบ เป็นด่านใหม่ แล้วเปิดในตัวแก้ไขด่าน"))
         self.b_rec.toggled.connect(self._toggle_record)
         self.b_play.toggled.connect(self._toggle_play)
@@ -736,23 +771,23 @@ class MainWindow(QMainWindow):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
         b_last = tool_button(tr("🤖  วิเคราะห์\nผลตรวจล่าสุด"))
-        b_last.setMinimumHeight(52)
+        make_tall(b_last)
         b_last.clicked.connect(self.analyze_last)
         b_live = tool_button(tr("🔎  วิเคราะห์สัญญาณ\nที่กดเล่นอยู่"))
-        b_live.setMinimumHeight(52)
+        make_tall(b_live)
         b_live.setToolTip(tr("ดูสัญญาณ 60 วินาทีล่าสุด หาอาการผิดปกติ เช่น ลัดวงจร, กระบอกสูบไม่ถึงปลาย, output กระพริบ"))
         b_live.clicked.connect(self.analyze_live)
         b_ladder = tool_button(tr("📄  เลือก CSV\nladder"))
-        b_ladder.setMinimumHeight(52)
+        make_tall(b_ladder)
         b_ladder.clicked.connect(self.choose_ladder)
         b_claude = tool_button(tr("💬  ให้ Claude\nอธิบายเพิ่ม"))
-        b_claude.setMinimumHeight(52)
+        make_tall(b_claude)
         b_claude.clicked.connect(lambda: (self.show_levels(), self.levelp.ask_claude()))
         h.addWidget(ribbon_group(tr("วิเคราะห์ความผิดพลาด (คะแนนดูจาก I/O เท่านั้น)"), [[b_last, b_live, b_ladder, b_claude]]))
         ok, why = llm.available()
         self.lbl_ai = QLabel(tr("ตัววิเคราะห์ในเครื่อง: พร้อมใช้ (ไม่ต้องใช้อินเทอร์เน็ต)\n")
                              + (tr("Claude: พร้อมใช้") if ok else tr("Claude: ยังไม่พร้อม — {0}", why)))
-        self.lbl_ai.setStyleSheet(f"color:{theme.TEXT_DIM}; padding:6px 12px;")
+        self.lbl_ai.setStyleSheet(f"color:{theme.TEXT_DIM}; padding:0 10px;")
         h.addWidget(self.lbl_ai)
         h.addStretch(1)
         return tab
@@ -824,7 +859,7 @@ class MainWindow(QMainWindow):
         self.levelp.open_level(lv)
         self.set_edit_mode(False)
         self.show_view(self.panel)
-        self.show_banner(f"🎯 {lv.title}\n{lv.desc}")
+        self.show_banner(f"🎯 {lv.title}\n{lv.desc}", level=True)
         self.show_levels()
         self._open_ladder()
         if self.poller:
@@ -1106,10 +1141,11 @@ class MainWindow(QMainWindow):
                 w.setVisible(vis)
             self.showMaximized() if sv["max"] else self.showNormal()
             self.set_split(sv["split"])
+            self._update_banner()
 
     def _hmi_widgets(self):
         return [self.menuWidget(), self.side_l.bar, self.side_r.bar, self.side_l.pane, self.side_r.pane,
-                self.cmd_bar, self.statusBar(), self.banner, self.space.tabBar(), self.floating]
+                self.cmd_bar, self.statusBar(), self.flow, self.banner, self.space.tabBar(), self.floating]
 
     def show_level_result(self) -> bool:
         """กราฟผลตรวจล่าสุด: สัญญาณจริง + เส้นประค่าคาดหวัง + แถบแดงช่วงที่ไม่ผ่าน."""
@@ -1423,7 +1459,7 @@ class MainWindow(QMainWindow):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
         b_show = tool_button(tr("⚡  แผงความผิดปกติ"))
-        b_show.setMinimumHeight(52)
+        make_tall(b_show)
         b_show.setToolTip(tr("เปิดแผง FAULTS ด้านขวา เลือกความผิดปกติรายอุปกรณ์"))
         b_show.clicked.connect(self.show_faults)
         b_rand, b_clear = tool_button(tr("🎲  สุ่ม 1 จุด")), tool_button(tr("✔  ล้างทั้งหมด"))
@@ -1438,14 +1474,14 @@ class MainWindow(QMainWindow):
             [None, b_clear, None],
         ]))
         b_scores = tool_button(tr("🏆  ตารางคะแนน\nทั้งห้อง"))
-        b_scores.setMinimumHeight(52)
+        make_tall(b_scores)
         b_scores.setToolTip(tr("ดาวรายด่านของนักเรียนทุกคน + Export Excel"))
         b_scores.clicked.connect(self.show_scores)
         b_xlsx = tool_button("📊  Export Excel")
         b_xlsx.clicked.connect(lambda: self.show_scores().export())
         h.addWidget(ribbon_group(tr("ห้องเรียน"), [[b_scores, b_xlsx], [None, None]]))
         self.b_exam = tool_button(tr("📝  เริ่ม\nโหมดสอบ"))
-        self.b_exam.setMinimumHeight(52)
+        make_tall(self.b_exam)
         self.b_exam.setToolTip(tr("จำกัดเวลา/จำนวนครั้งตรวจ · ปิด AI · ล็อกการแก้ผัง — ออกได้ด้วยรหัสครู"))
         self.b_exam.clicked.connect(self.setup_exam)
         self.b_exam_end = tool_button(tr("🔓  จบการสอบ"))
@@ -1453,17 +1489,15 @@ class MainWindow(QMainWindow):
         self.b_exam_end.clicked.connect(self.end_exam)
         h.addWidget(ribbon_group(tr("โหมดสอบ"), [[self.b_exam, self.b_exam_end], [None, None]]))
         self.b_level_edit = tool_button(tr("✏  ตัวแก้ไข\nด่าน"))
-        self.b_level_edit.setMinimumHeight(52)
+        make_tall(self.b_level_edit)
         self.b_level_edit.setToolTip(tr("สร้าง/แก้/ทำสำเนา/ลบด่าน โดยไม่ต้องเขียน YAML (ตรวจจากผล I/O)"))
         self.b_level_edit.clicked.connect(lambda: self.open_level_editor())
         h.addWidget(ribbon_group(tr("ด่าน"), [[self.b_level_edit], [None]]))
         self._teacher_lockables = [b_show, b_rand, b_clear, self.btn_hide_faults, b_scores, b_xlsx, self.b_exam,
                                    self.b_level_edit]
-        tip = QLabel(tr("ตัวอย่างการฝึก:\n• เซนเซอร์ค้าง ON → โปรแกรมต้องไม่สั่งงานผิดลำดับ\n"
+        b_show.setToolTip(b_show.toolTip() + "\n\n" + tr("ตัวอย่างการฝึก:\n• เซนเซอร์ค้าง ON → โปรแกรมต้องไม่สั่งงานผิดลำดับ\n"
                      "• ลมไม่มา → ตั้ง Timer เฝ้า ถ้า a1 ไม่มาใน 3 วินาทีให้เตือน\n"
                      "• OL ทริป → หยุดมอเตอร์ + ไฟแดง/ออด"))
-        tip.setStyleSheet(f"color:{theme.TEXT_DIM}; padding:6px 12px;")
-        h.addWidget(tip)
         h.addStretch(1)
         return tab
 
@@ -1478,19 +1512,20 @@ class MainWindow(QMainWindow):
     def _build_space(self):
         self.space = QTabWidget()
         self.space.setObjectName("Space")
-        self.space.setTabPosition(QTabWidget.South)
-        self.space.addTab(self.panel, "Panel")
-        self.space.addTab(self.chart, "Chart")
+        self.space.addTab(self.panel, tr("ผังอุปกรณ์"))
+        self.space.addTab(self.chart, tr("กราฟ"))
         self.space.addTab(self.ladderv, "Ladder")
         self.space.currentChanged.connect(lambda _i: self._on_space_tab(self.space))
         self.split_tabs = QTabWidget()             # แบ่งจอ: ผังบน · กราฟ/Ladder ล่าง
         self.split_tabs.setObjectName("Space")
-        self.split_tabs.setTabPosition(QTabWidget.South)
         self.split_tabs.currentChanged.connect(lambda _i: self._on_space_tab(self.split_tabs))
         center = QWidget()
         v = QVBoxLayout(center)
         v.setContentsMargins(0, 0, 0, 0)
         v.setSpacing(0)
+        self.flow = FlowBar()
+        self.flow.clicked.connect(self._on_flow)
+        v.addWidget(self.flow)
         self.banner = QLabel()
         self.banner.setObjectName("Banner")
         self.banner.setWordWrap(True)
@@ -1570,6 +1605,7 @@ class MainWindow(QMainWindow):
 
     def _on_side_change(self, side, key, is_open):
         self._save_sides()
+        self._update_banner()
 
     def _save_sides(self):
         if getattr(self, "_restoring_sides", False):
@@ -1583,7 +1619,7 @@ class MainWindow(QMainWindow):
             self.space.clear()
             self.splitter.addWidget(self.panel)
             self.splitter.addWidget(self.split_tabs)
-            self.split_tabs.addTab(self.chart, "Chart")
+            self.split_tabs.addTab(self.chart, tr("กราฟ"))
             self.split_tabs.addTab(self.ladderv, "Ladder")
             self.split_tabs.show()
             self.panel.show()       # QTabWidget ซ่อนหน้าที่ไม่ได้เลือกไว้
@@ -1591,8 +1627,8 @@ class MainWindow(QMainWindow):
             self.stack.setCurrentWidget(self.splitter)
         elif not on and self.stack.currentWidget() is not self.space:
             self.split_tabs.clear()
-            self.space.addTab(self.panel, "Panel")
-            self.space.addTab(self.chart, "Chart")
+            self.space.addTab(self.panel, tr("ผังอุปกรณ์"))
+            self.space.addTab(self.chart, tr("กราฟ"))
             self.space.addTab(self.ladderv, "Ladder")
             self.stack.setCurrentWidget(self.space)
         for b in (self.btn_split, self.st_split, self.fl_split):
@@ -1623,6 +1659,7 @@ class MainWindow(QMainWindow):
             b.setChecked(on)
             b.blockSignals(False)
         self._apply_ribbon_height()
+        QTimer.singleShot(0, self._apply_ribbon_height)      # หลัง stylesheet ใหม่มีผลครบ
         for it in self.panel.items_by_id.values():
             it.prepareGeometryChange()
             it.update()
@@ -1633,9 +1670,78 @@ class MainWindow(QMainWindow):
             b.blockSignals(False)
         state.update(large=on)
 
-    def show_banner(self, text: str):
+    def show_banner(self, text: str, level: bool = False):
+        self._banner_text, self._banner_level = text, level
+        self._update_banner()
+
+    def _update_banner(self):
+        """แผงด่านเปิดอยู่ = โจทย์อยู่ในแผงแล้ว ไม่แสดงซ้ำบนผัง."""
+        text = getattr(self, "_banner_text", "")
         self.banner.setText(text)
-        self.banner.setVisible(bool(text))
+        dup = getattr(self, "_banner_level", False) and (self.side_r.is_showing("level") or self.btn_edit.isChecked())
+        self.banner.setVisible(bool(text) and not self.hmi and not dup)
+
+    # ---------- แถบขั้นตอน ----------
+    def _flow_rows(self) -> tuple[list, str]:
+        lv, online = self.levelp.level, self.online
+        hunt = bool(lv and lv.is_fault_hunt)
+        kind = self.cb_backend.currentData()
+        name = tr("เขียน ladder")
+        if hunt:
+            lad = (name, tr("ด่านหาจุดเสียไม่ต้องเขียน ladder"), True, True)
+        elif self.soft is not None:
+            ok = self.soft.state == "run" and not self.ladderv.unsent
+            lad = (name, tr("วาด ladder ในแท็บ Ladder แล้วกด F4 ส่งลง PLC"), ok, True)
+        elif kind == "slmp":
+            lad = (name, tr("เขียนใน GX Works3 แล้ว Write ลง PLC — หรือเลือก PLC ในตัวเพื่อวาดในโปรแกรมนี้"), online, True)
+        else:
+            lad = (name, tr("Mock PLC มีโปรแกรมตัวอย่างอยู่แล้ว — อยากวาดเองให้เลือก PLC ในตัว"), online, True)
+        last, lh, busy = self.levelp.last_runner, self.levelp.last_hunt, self.levelp.busy
+        done = bool(lv) and not busy and ((lh is not None and lh.found) if hunt else (last is not None and last.stars == 3))
+        if busy:
+            tip = tr("กำลังหาจุดเสีย — คลิกขวาอุปกรณ์ที่คิดว่าเสีย") if hunt else tr("กำลังตรวจ — ห้ามกดอุปกรณ์บนผัง")
+        else:
+            tip = tr("คลิกเพื่อเริ่มหาจุดเสีย") if hunt else tr("คลิกให้โปรแกรมตรวจคำตอบจากผล I/O")
+        rows = [(tr("เลือกด่าน"), tr("คลิกเพื่อเลือกด่านที่จะฝึก"), lv is not None, True),
+                (tr("เชื่อมต่อ PLC"), tr("คลิกเพื่อเลือก PLC แล้วเชื่อมต่อ — มือใหม่แนะนำ PLC ในตัว"), online, self.poller is None),
+                lad,
+                (tr("หาจุดเสีย") if hunt else tr("ตรวจคำตอบ"), tip, done, lv is not None and not busy)]
+        return rows, tr("ผ่านแล้ว 🎉 คลิกขั้นแรกเพื่อเลือกด่านต่อไป")
+
+    def _update_flow(self):
+        self.flow.set_steps(*self._flow_rows())
+
+    def _on_flow(self, i: int):
+        btn = self.flow.steps[i]
+        if i in (0, 1):
+            menu = QMenu(self)
+            menu.setAttribute(Qt.WA_DeleteOnClose)
+            (self._fill_connect_menu if i else self._fill_level_menu)(menu)
+            menu.popup(btn.mapToGlobal(QPoint(0, btn.height() + 2)))
+        elif i == 2:
+            self.show_ladder()
+        else:
+            self.start_check()
+        self._update_flow()
+
+    def _fill_level_menu(self, menu: QMenu):
+        for k, lv in enumerate(self.levelp.levels):
+            act = menu.addAction(self.cb_level.itemText(k).replace("&", "&&"))
+            act.setEnabled(self.exam is None or self.exam.allows(lv.id))
+            act.triggered.connect(lambda _=False, n=k: self.open_level(n))
+
+    def _fill_connect_menu(self, menu: QMenu):
+        hints = {"soft": tr("วาด ladder ในโปรแกรมนี้ (แนะนำ)"), "mock": tr("ลองเล่นโดยไม่ต้องเขียน ladder"),
+                 "slmp": tr("ใช้คู่กับ GX Works3")}
+        for kind, hint in hints.items():
+            k = self.cb_backend.findData(kind)
+            act = menu.addAction(f"{self.cb_backend.itemText(k)}  —  {hint}")
+            act.triggered.connect(lambda _=False, n=k: self._connect_to(n))
+
+    def _connect_to(self, index: int):
+        if self.poller is None:
+            self.cb_backend.setCurrentIndex(index)
+            self.connect_plc()
 
     def _dock(self, title, widget, area, min_w=None):
         d = QDockWidget(title, self)
@@ -1668,7 +1774,11 @@ class MainWindow(QMainWindow):
         self.d_level = PaneHandle(R, "level")
         self.d_faults = PaneHandle(R, "faults")
         self._restoring_sides = True
-        L.restore(default_open=True)
+        if state.load().get("ui_rev", 0) < UI_REV:      # หน้าตาใหม่: แผงอุปกรณ์กางเองเมื่อแก้ไขผัง
+            old = state.load().get("pane_left") or {}
+            state.update(ui_rev=UI_REV, pane_left={**old, "key": "library", "open": False}, cmd_history=False,
+                         pane_right={**(state.load().get("pane_right") or {}), "key": "level", "open": True})
+        L.restore(default_open=False)
         R.restore(default_open=True)
         self._restoring_sides = False
         QShortcut(QKeySequence("Ctrl+B"), self, activated=lambda: self._toggle_side(self.side_l))
@@ -1689,7 +1799,7 @@ class MainWindow(QMainWindow):
         self.cmd_history.setMaximumBlockCount(500)
         self.cmd_history.setFixedHeight(110)
         row = QHBoxLayout()
-        row.setContentsMargins(6, 4, 6, 4)
+        row.setContentsMargins(6, 2, 6, 2)
         row.setSpacing(6)
         self.btn_cmd = QToolButton()
         self.btn_cmd.setText("⌨")
@@ -1704,17 +1814,18 @@ class MainWindow(QMainWindow):
         self.cmd_input.returnPressed.connect(self._on_command)
         self.lbl_last = QLabel()
         self.lbl_last.setStyleSheet(f"color:{theme.TEXT_DIM};")
-        self.lbl_last.setMaximumWidth(520)
+        self.lbl_last.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         row.addWidget(self.btn_cmd)
         row.addWidget(prompt)
         row.addWidget(self.cmd_input, 1)
-        row.addWidget(self.lbl_last)
+        row.addWidget(self.lbl_last, 1)
         v.addWidget(self.cmd_history)
         v.addLayout(row)
         self._central_v.addWidget(bar)
-        on = state.load().get("cmd_history", True)
+        on = state.load().get("cmd_history", False)
         self.btn_cmd.setChecked(on)
         self.cmd_history.setVisible(on)
+        self.lbl_last.setVisible(not on)
         QShortcut(QKeySequence("Ctrl+`"), self, activated=self.btn_cmd.toggle)
 
     def set_cmd_history(self, on: bool):
@@ -1725,7 +1836,7 @@ class MainWindow(QMainWindow):
     def _build_statusbar(self):
         sb = self.statusBar()
         self.lbl_cursor = QLabel("")
-        self.lbl_cursor.setMinimumWidth(420)
+        self.lbl_cursor.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         sb.addWidget(self.lbl_cursor, 1)
         self.lbl_rate = QLabel("— Hz")
         self.st_mode = tool_button("RUN", checkable=True)
@@ -1749,6 +1860,11 @@ class MainWindow(QMainWindow):
         self.st_sound.setToolTip(tr("เสียงประกอบ: ตรวจผ่าน / ไม่ผ่าน / ออด"))
         self.st_sound.setChecked(self.sounds.enabled)
         self.st_sound.toggled.connect(self.set_sound)
+        for w, tip in ((self.st_mode, tr("สลับโหมดใช้งาน / แก้ไขผัง")), (self.st_snap, tr("วางอุปกรณ์ให้ตรงช่องตาราง")),
+                       (self.st_grid, tr("แสดงเส้นตาราง")), (self.st_split, tr("แสดงผังอุปกรณ์และกราฟพร้อมกัน")),
+                       (self.st_large, tr("ขยายตัวอักษรทั้งโปรแกรม สำหรับฉายโปรเจกเตอร์")),
+                       (self.st_rec, tr("บันทึกกราฟต่อเนื่อง (ปิด = หยุดกราฟ)"))):
+            w.setToolTip(tip)
         for w in (self.lbl_rate, self.st_mode, self.st_snap, self.st_grid, self.st_split, self.st_large,
                   self.st_sound, self.st_rec, self.st_online):
             sb.addPermanentWidget(w)
@@ -1757,18 +1873,27 @@ class MainWindow(QMainWindow):
         self._rate_timer = QTimer(self)
         self._rate_timer.timeout.connect(self._update_rate)
         self._rate_timer.start(1000)
+        self._flow_timer = QTimer(self)
+        self._flow_timer.timeout.connect(self._update_flow)
+        self._flow_timer.start(300)
+        self._update_flow()
 
     # ================= panel file =================
     def _open_startup_panel(self):
-        path = None
-        last = state.load().get("last_panel")
-        if last and Path(last).exists():
-            path = Path(last)
-        path = path or (DEFAULT_PANEL if DEFAULT_PANEL.exists() else None)
-        if path:
-            self._load_panel(path)
-        else:
-            self.panel.load_doc(PanelDoc())
+        """เปิดโปรแกรม = หน้าเปล่า (ผังเดิมเปิดได้จาก 📂 เปิด / ฉากตัวอย่าง / เลือกด่าน)."""
+        self.panel.load_doc(PanelDoc())
+
+    def _shelve_free_ladder(self):
+        """ladder ฝึกอิสระของครั้งก่อน: เก็บเป็นไฟล์ตามเวลา แล้วเริ่มหน้าเปล่า (ladder ของด่านไม่ถูกแตะ)."""
+        path = self._ladder_path()
+        if self.exam or self.levelp.level or not path.exists():
+            return
+        keep = path.with_name(f"{path.stem}_{time.strftime('%Y%m%d_%H%M%S', time.localtime(path.stat().st_mtime))}.csv")
+        try:
+            path.replace(keep)
+        except OSError:
+            return                           # ย้ายไม่ได้ → เปิดของเดิมต่อ ไม่ทิ้งงาน
+        self.log(tr("ladder ครั้งก่อนเก็บไว้ที่ {0} (เปิดได้ด้วย นำเข้า CSV)", str(keep)))
 
     def _load_panel(self, path: Path):
         try:
@@ -1886,6 +2011,19 @@ class MainWindow(QMainWindow):
         self._place_floating()
         if edit and not self.side_l.is_open:
             self.side_l.open("library")          # แก้ไขผัง = ต้องใช้แผงอุปกรณ์
+            self._auto_library = True
+        elif not edit and getattr(self, "_auto_library", False):
+            self._auto_library = False
+            if self.side_l.is_showing("library"):
+                self.side_l.collapse()           # โปรแกรมกางให้เอง → ยุบคืนเมื่อเลิกแก้ไข
+        if edit and self.side_r.is_showing("level"):
+            self.side_r.open("props")
+            self._auto_props = True
+        elif not edit and getattr(self, "_auto_props", False):
+            self._auto_props = False
+            if self.side_r.is_showing("props"):
+                self.side_r.open("level")
+        self._update_banner()
         if edit:
             self.show_view(self.panel)
         self.log(tr("โหมดแก้ไขผัง: ลากวาง/ย้าย/ลบอุปกรณ์ได้") if edit else tr("โหมดใช้งาน: คลิกอุปกรณ์เพื่อกด/สับสวิตช์"))
@@ -2169,6 +2307,10 @@ class MainWindow(QMainWindow):
         self.cmd_history.appendPlainText(text)
         last = text.splitlines()[0] if text else ""
         self.lbl_last.setText(last if len(last) < 90 else last[:88] + "…")
+        self.lbl_last.setToolTip(text)
+        color = (theme.DANGER if last.startswith("✖") else theme.WARN if last.startswith(("⚠", "🔒"))
+                 else theme.SUCCESS if last.startswith("✔") else theme.TEXT_DIM)
+        self.lbl_last.setStyleSheet(f"color:{color};")
 
     def _on_command(self):
         raw = self.cmd_input.text().strip()

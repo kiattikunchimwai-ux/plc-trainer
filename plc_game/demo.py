@@ -30,7 +30,7 @@ class DemoRunner(QObject):
             (3000, tr("C0 นับครบ 5 → หลอด ‘นับครบ 5’ (Y2) ติด\nดูตัวแสดงค่า Counter C0"), lambda: None),
             (3000, tr("ขั้นที่ 5 · กดปุ่ม Stop (X1)\nY0 ดับ → สายพานและมอเตอร์หยุด, Timer รีเซ็ต"), lambda: self._press("X1", 500)),
             (3000, tr("ขั้นที่ 6 · กด Reset C0 (X3)\nCounter กลับเป็น 0 และหลอด Y2 ดับ"), lambda: self._press("X3", 500)),
-            (4500, tr("ขั้นที่ 7 · ดูกราฟ\nแท็บ Chart ด้านล่าง: Timing Diagram ของทุกสัญญาณในผัง (เลือกได้ที่แผง LAYERS)"),
+            (4500, tr("ขั้นที่ 7 · ดูกราฟ\nแท็บกราฟด้านบน: Timing Diagram ของทุกสัญญาณในผัง (เลือกได้ที่แผง LAYERS)"),
              self._show_chart),
             (5000, tr("ขั้นที่ 8 · จัดผังเอง\nกด ‘✎ แก้ไขผัง’ → ลากอุปกรณ์จาก TOOL PALETTE มาวาง แล้วเลือกอุปกรณ์เพื่อแก้ Address ใน PROPERTIES"),
              self._show_edit),

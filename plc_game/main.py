@@ -69,7 +69,12 @@ def main(argv=None) -> int:
         from PySide6.QtGui import QIcon
         app.setWindowIcon(QIcon(str(icon)))
     win = MainWindow(cfg)
-    win.show()
+    area = app.primaryScreen().availableGeometry()
+    win.resize(min(1500, area.width() - 40), min(900, area.height() - 60))
+    if area.width() < 1600:          # จอเล็ก/ตั้ง scale สูง → เต็มจอเลย ไม่ให้ขอบล้น
+        win.showMaximized()
+    else:
+        win.show()
     if updated:
         win.log(tr("✔ อัปเดตด่าน/ผังเป็นรุ่นใหม่ {0} ไฟล์", len(updated)))
     if kept:
@@ -78,13 +83,15 @@ def main(argv=None) -> int:
         QTimer.singleShot(300, lambda: _selftest(win, Path(args.selftest)))
     elif args.demo:
         from .demo import DemoRunner
+        from .ui.main_window import DEFAULT_PANEL
+        win._load_panel(DEFAULT_PANEL)          # เปิดโปรแกรมเป็นหน้าเปล่า แต่เดโมใช้ผังนี้
         win._demo = DemoRunner(win)
         win._demo.start()
     elif args.connect:
         win.connect_plc()
     elif not state.load().get("tutorial_done") and not win.exam:
         QTimer.singleShot(400, win.start_tutorial)     # เปิดโปรแกรมครั้งแรก → บทเรียนนำทาง (แทนหน้าเริ่มต้น)
-    elif state.load().get("quickstart", True):
+    elif state.load().get("quickstart", False):
         QTimer.singleShot(0, win.show_quickstart)     # หน้าเริ่มต้น (ปิดได้ด้วย checkbox ในหน้านั้น)
     return app.exec()
 

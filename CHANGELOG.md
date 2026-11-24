@@ -9,7 +9,7 @@
 - First bullet is the short note shown in the About dialog
 -->
 
-## Unreleased
+## 1.0.1 — 2026-11-24
 ### th
 - เขียน ladder ในโปรแกรมได้เลย (แท็บ Ladder) แล้วรันด้วย PLC ในตัว ดูสถานะสด และตรวจด่านได้โดยไม่ต้องมี GX Works3
 - ตรวจ ladder ก่อนส่งลง PLC: บอก rung ที่ผิด ช่องที่ยังไม่ได้กรอก และคำสั่งที่ยังไม่รองรับ
@@ -24,6 +24,9 @@
 - ครู: แท็บและแผ่น Excel "ข้อที่พลาดบ่อย" + ข้อสังเกตจาก ladder ในแผ่นรายข้อ (ไม่มีผลต่อคะแนน)
 - บทเรียน ladder ทีละขั้น (ปุ่ม 🎓 ในแท็บ Ladder หรือ TUTORIAL LADDER)
 - ตัวตรวจด่าน 5, 11, 13 เข้มขึ้น: ladder ที่ผิดบางแบบเคยได้ 3 ดาว
+- หน้าตาใหม่ ใช้ง่ายขึ้น: แถบขั้นตอน 1–4 (เลือกด่าน → เชื่อมต่อ → เขียน ladder → ตรวจ), แถบเครื่องมือเตี้ยลงและไม่ทับกัน, แท็บผัง/กราฟ/Ladder อยู่บน, แผงอุปกรณ์กางเองเมื่อแก้ไขผัง, ใช้บนจอ 1280 ได้
+- คัดลอก/วาง ladder ไปกลับกับ GX Works3 ได้ด้วย Ctrl+C / Ctrl+V (Ctrl+A เลือกทุก rung; ปิดตอนสอบ)
+- เปิดโปรแกรมและแท็บ Ladder เป็นหน้าเปล่า (ladder ฝึกอิสระครั้งก่อนเก็บเป็นไฟล์ให้ ไม่หาย)
 - แก้: ด่านที่ครูลบหรือเปลี่ยนรหัสกลับมาเองเมื่อเปิดโปรแกรมใหม่
 ### en
 - Draw ladder inside the app (Ladder tab), run it on the built-in PLC with live monitoring, and check levels without GX Works3
@@ -39,6 +42,9 @@
 - Teachers: a "Common mistakes" tab and Excel sheet, plus ladder notes in the per-item sheet (no effect on score)
 - Step-by-step ladder lesson (🎓 button in the Ladder tab, or TUTORIAL LADDER)
 - Stricter checks on levels 5, 11 and 13: some wrong ladders used to get 3 stars
+- Easier UI: step bar 1–4 (choose level → connect → write ladder → check), shorter toolbars that never overlap, panel/chart/Ladder tabs on top, device pane opens by itself in edit mode, fits 1280-wide screens
+- Copy/paste ladder to and from GX Works3 with Ctrl+C / Ctrl+V (Ctrl+A selects every rung; off in exams)
+- The app and the Ladder tab start blank (your previous free ladder is kept as a file)
 - Fixed: levels a teacher deleted or renamed came back after restarting the app
 
 ## 1.0.0 — 2026-11-18

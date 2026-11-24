@@ -127,5 +127,7 @@ def test_quickstart_dialog(app, tmp_path, monkeypatch):
     assert not dlg.cards["sorting.plcpanel"].icon().isNull()
     dlg.cards["sorting.plcpanel"].click()
     assert dlg.path.name == "sorting.plcpanel" and dlg.backend == "mock" and dlg.action == "open"
+    dlg.cb_show.setChecked(True)
+    assert state.load()["quickstart"] is True
     dlg.cb_show.setChecked(False)
     assert state.load()["quickstart"] is False

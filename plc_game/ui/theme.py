@@ -55,21 +55,26 @@ QFrame#TopBar {{ background: {BG_PANEL_DARK}; border-bottom: 1px solid {BORDER};
 QLabel#Logo {{ font-size: {fs_l}pt; font-weight: bold; color: white; padding: 0 6px; }}
 QLabel#DocName {{ color: {TEXT_DIM}; }}
 QFrame#Pill {{ background: {BG_PANEL}; border: 1px solid {BORDER}; border-radius: 16px; }}
-QToolButton#Seg {{ border-radius: 14px; padding: 4px 14px; background: transparent; border: none; font-weight: bold; }}
+QToolButton#Seg {{ border-radius: 12px; padding: 3px 12px; background: transparent; border: none; font-weight: bold; }}
 QToolButton#Seg:checked {{ background: {GRAD}; color: white; }}
 QLabel#Online {{ border-radius: 10px; padding: 2px 10px; font-weight: bold; color: white; }}
 
 /* ----- Ribbon ----- */
 QTabWidget#Ribbon::pane {{ background: {BG_APP}; border: none; border-bottom: 1px solid {BORDER}; }}
 QTabWidget#Ribbon QTabBar::tab {{
-    background: transparent; color: {TEXT_DIM}; padding: 5px 16px; margin: 4px 2px 2px 2px;
-    border-radius: 13px; border: none;
+    background: transparent; color: {TEXT_DIM}; padding: 3px 14px; margin: 2px 2px 1px 2px;
+    border-radius: 9px; border: none;
 }}
 QTabWidget#Ribbon QTabBar::tab:hover {{ background: {BG_PANEL}; color: {TEXT}; }}
 QTabWidget#Ribbon QTabBar::tab:selected {{ background: {GRAD}; color: white; font-weight: bold; }}
-QFrame#RibbonGroup {{ background: {BG_PANEL}; border: 1px solid {BORDER}; border-radius: {RADIUS}px; margin: 4px 3px; }}
+QFrame#RibbonGroup {{ background: {BG_PANEL}; border: 1px solid {BORDER}; border-radius: {RADIUS}px; margin: 2px 2px; }}
 QFrame#RibbonGroup QLabel {{ color: {TEXT}; }}
-QLabel#RibbonGroupTitle {{ color: {TEXT_DIM}; font-size: {fs_s}pt; background: transparent; padding: 0 0 2px 0; }}
+QFrame#RibbonGroup QToolButton {{ padding: 1px 8px; }}
+QFrame#RibbonGroup QComboBox, QFrame#RibbonGroup QDoubleSpinBox, QFrame#RibbonGroup QSpinBox {{ padding: 1px 6px; }}
+QFrame#TopBar QToolButton, QFrame#TopBar QPushButton {{ padding: 3px 9px; }}
+QWidget#LadderView QToolButton {{ padding: 2px 8px; }}
+QFrame#TopBar QComboBox {{ padding: 2px 8px; }}
+QFrame#CmdBar QToolButton, QFrame#CmdBar QLineEdit {{ padding: 1px 8px; }}
 
 /* ----- ปุ่ม ----- */
 QPushButton, QToolButton {{
@@ -80,7 +85,10 @@ QPushButton:pressed, QToolButton:pressed, QPushButton:checked, QToolButton:check
     background: {GRAD}; color: white; border-color: {ACCENT};
 }}
 QPushButton:disabled, QToolButton:disabled {{ color: #586378; background: {BG_PANEL_DARK}; }}
+QToolButton#PrimaryTool {{ background: {GRAD}; color: white; font-weight: bold; border: none; }}
+QToolButton#PrimaryTool:disabled {{ background: {BG_PANEL_DARK}; color: #586378; }}
 QPushButton#Primary {{ background: {GRAD}; color: white; font-weight: bold; border: none; }}
+QPushButton#Primary:disabled {{ background: {BG_PANEL_DARK}; color: #586378; }}
 QPushButton#Primary:hover {{ border: 1px solid white; }}
 
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit, QTextEdit, QTextBrowser {{
@@ -130,9 +138,10 @@ QDockWidget::title {{ background: {BG_PANEL_DARK}; color: {TEXT_DIM}; padding: 4
 /* ----- พื้นที่ผัง ----- */
 QTabWidget#Space::pane {{ border: none; background: {BG_CANVAS}; }}
 QTabWidget#Space QTabBar::tab {{
-    background: transparent; color: {TEXT_DIM}; padding: 4px 18px; margin: 3px 2px; border-radius: 11px;
+    background: transparent; color: {TEXT_DIM}; padding: 2px 18px; margin: 2px 2px; border-radius: 10px;
 }}
-QTabWidget#Space QTabBar::tab:selected {{ background: {BG_PANEL}; color: {TEXT}; font-weight: bold; }}
+QTabWidget#Space QTabBar::tab:selected {{ background: {BG_PANEL}; color: {ACCENT2}; font-weight: bold; }}
+QTabWidget#Space QTabBar::tab:hover:!selected {{ background: {BG_PANEL_DARK}; color: {TEXT}; }}
 QFrame#Floating {{ background: rgba(30, 38, 51, 225); border: 1px solid {BORDER}; border-radius: 12px; }}
 QFrame#Floating QToolButton {{ background: transparent; border: none; border-radius: 8px; padding: 4px 8px; }}
 QFrame#Floating QToolButton:hover {{ background: {CARD_HI}; }}
@@ -141,6 +150,15 @@ QLabel#Banner {{
     background: {BG_PANEL}; color: #FFE58A; font-size: {fs_l}pt; padding: 10px 16px;
     border: 1px solid {BORDER}; border-left: 5px solid {ACCENT2}; border-radius: {RADIUS}px; margin: 6px;
 }}
+
+/* ----- แถบขั้นตอน ----- */
+QFrame#FlowBar {{ background: {BG_PANEL_DARK}; border-bottom: 1px solid {BORDER}; }}
+QToolButton#Step {{ border-radius: 11px; padding: 1px 12px; background: transparent; color: {TEXT_DIM}; border: 1px solid {BORDER}; }}
+QToolButton#Step:hover {{ border-color: {ACCENT2}; color: {TEXT}; }}
+QToolButton#Step:disabled {{ color: #586378; }}
+QToolButton#Step[st="done"] {{ color: {SUCCESS}; border-color: #1F5136; }}
+QToolButton#Step[st="next"] {{ background: {GRAD}; color: white; font-weight: bold; border-color: {ACCENT}; }}
+QLabel#FlowHint {{ color: {TEXT_DIM}; padding: 0 8px; }}
 
 /* ----- บรรทัดคำสั่ง ----- */
 QFrame#CmdBar {{ background: {BG_PANEL_DARK}; border-top: 1px solid {BORDER}; }}
@@ -153,7 +171,7 @@ QLabel#CmdPrompt {{ color: {ACCENT2}; padding: 0 6px; font-family: Consolas; fon
 /* ----- Status bar ----- */
 QStatusBar {{ background: {BG_PANEL_DARK}; border-top: 1px solid {BORDER}; }}
 QStatusBar::item {{ border: none; }}
-QStatusBar QToolButton {{ padding: 1px 10px; margin: 2px 1px; border-radius: 9px; font-size: {fs_s}pt; font-weight: bold; }}
+QStatusBar QToolButton {{ padding: 0px 9px; margin: 1px 1px; border-radius: 9px; font-size: {fs_s}pt; font-weight: bold; }}
 QStatusBar QLabel {{ color: {TEXT_DIM}; padding: 0 6px; }}
 
 QScrollBar:vertical {{ background: transparent; width: 9px; margin: 2px; }}

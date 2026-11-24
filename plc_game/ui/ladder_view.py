@@ -7,15 +7,17 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QEvent, QMimeData, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QFontMetricsF, QPainter, QPen
 from PySide6.QtWidgets import (
     QApplication, QDialog, QDialogButtonBox, QFileDialog, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget,
-    QListWidgetItem, QPlainTextEdit, QScrollArea, QSplitter, QToolButton, QToolTip, QVBoxLayout, QWidget,
+    QListWidgetItem, QPlainTextEdit, QScrollArea, QSizePolicy, QSplitter, QToolButton, QToolTip, QVBoxLayout, QWidget,
 )
 
 from ..i18n import tr
+from .flow_layout import FlowLayout
 from ..ladder.check import check
+from ..ladder import gxclip
 from ..ladder.csvio import LadderError, load_csv, save_csv
 from ..ladder.editor import (BLANK, INLINE, Branch, Coil, Inline, LadderDoc, Leaf, Parallel, Rung, Series,
                              is_blank, standalone, rebase, rung_code, rungs_from, walk)
@@ -87,6 +89,9 @@ def _value(s: str, base: int) -> bool:
 
 
 # ======================= ผืนวาด =======================
+GX_MIME = f'application/x-qt-windows-mime;value="{gxclip.FORMAT}"'
+
+
 class LadderCanvas(QWidget):
     selected = Signal()
     message = Signal(str)
@@ -176,6 +181,11 @@ class LadderCanvas(QWidget):
     def minimumSizeHint(self):
         return self.minimumSize()
 
+    @property
+    def pristine(self) -> bool:
+        r = self.doc.rungs
+        return len(r) == 1 and not r[0].is_raw and not r[0].comment and is_blank(r[0]) and not self.problems
+
     # ---------- วาด (p=None = คำนวณตำแหน่งอย่างเดียว) ----------
     def paintEvent(self, e):
         p = QPainter(self)
@@ -194,6 +204,13 @@ class LadderCanvas(QWidget):
         p.end()
 
     def _rung(self, p, n, r, y, h, step):
+        if self.pristine:                    # ยังไม่ได้เขียนอะไร = หน้าเปล่า เหลือแค่เคอร์เซอร์
+            p.setPen(QPen(QColor(theme.BORDER), 2))
+            for x in (LEFT, self.right):
+                p.drawLine(QPointF(x, y), QPointF(x, y + h))
+            if self.uid in self.boxes:
+                self._frame(p, self.uid, self.boxes[self.uid])
+            return
         a, b = sorted((self.rung, self.rung_to))
         if a <= n <= b:
             p.fillRect(QRectF(4, y + 2, self.right + 8, h - 4), QColor(theme.CARD if a == b else theme.CARD_HI))
@@ -656,10 +673,11 @@ class LadderView(QWidget):
         self._uid_cache = (-1, [])
         self.save_error = ""
 
+        self.setObjectName("LadderView")
         v = QVBoxLayout(self)
-        v.setContentsMargins(6, 6, 6, 6)
+        v.setContentsMargins(6, 3, 6, 6)
         v.setSpacing(4)
-        bar1, bar2 = QHBoxLayout(), QHBoxLayout()
+        bar1, bar2 = FlowLayout(), QHBoxLayout()     # แถวแรกตัดบรรทัดเองเมื่อจอแคบ
         for b in (bar1, bar2):
             b.setSpacing(4)
             v.addLayout(b)
@@ -683,24 +701,25 @@ class LadderView(QWidget):
         btn(B, "coil", "( ) F7", tr("คอยล์ / output เพิ่มอีกตัว"), lambda: self.add_coil())
         btn(B, "branch", "├( ) Shift+F7", tr("output ที่มีหน้าสัมผัสของตัวเอง (แยกกิ่ง)"), lambda: self.add_coil(branch=True))
         btn(B, "func", "[ ] F8", tr("คำสั่ง เช่น MOV K10 D0, SET M0, RST C0"), lambda: self.add_coil(func=True))
-        btn(B, "learn", "🎓", tr("บทเรียน ladder: วาด ladder แรก ส่งลง PLC ในตัว แล้วดูสถานะสด"), self.learn_requested.emit)
+        btn(B, "learn", tr("🎓 บทเรียน"), tr("บทเรียน ladder: วาด ladder แรก ส่งลง PLC ในตัว แล้วดูสถานะสด"), self.learn_requested.emit)
         btn(B, "ins", "+ rung", tr("แทรก rung ใต้ rung นี้ (Insert, Shift+Insert = เหนือ)"), lambda: self.insert_rung())
         btn(B, "del", tr("ลบ"), tr("ลบชิ้นที่เลือก (Delete) / ทั้ง rung (Ctrl+Delete)"), lambda: self.delete())
         btn(B, "undo", "↶", tr("ย้อนกลับ (Ctrl+Z)"), lambda: self.undo())
         btn(B, "redo", "↷", tr("ทำซ้ำ (Ctrl+Y)"), lambda: self.redo())
         btn(B, "note", tr("คอมเมนต์"), tr("คอมเมนต์ของ rung (กด ;)"), lambda: self.edit_comment())
         btn(B, "text", tr("ข้อความ"), tr("แก้ rung นี้เป็นคำสั่งแบบข้อความ"), lambda: self.edit_text())
-        B.addStretch(1)
         B = bar2
         btn(B, "send", tr("▶ F4 ส่งลง PLC"), tr("ตรวจ ladder แล้วส่งลง PLC ในตัว (ล้าง M/T/C/D แล้ว RUN)"),
             lambda: self.send_requested.emit())
         btn(B, "run", "RUN", tr("ให้ PLC ในตัวทำงาน"), lambda: self.control.emit("run"))
         btn(B, "stop", "STOP", tr("หยุด PLC ในตัว (Y ดับหมด)"), lambda: self.control.emit("stop"))
         btn(B, "reset", "RESET", tr("ล้าง M/T/C/D และข้อผิดพลาด แล้วหยุด"), lambda: self.control.emit("reset"))
+        self.buttons["send"].setObjectName("PrimaryTool")
         self.lbl_state = QLabel()
         B.addWidget(self.lbl_state)
         self.lbl_file = QLabel()
         self.lbl_file.setStyleSheet(f"color:{theme.TEXT_DIM};")
+        self.lbl_file.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         B.addWidget(self.lbl_file, 1)
         btn(B, "import", tr("นำเข้า CSV"), tr("เปิด CSV ที่ Export จาก GX Works3 (แทนที่ ladder นี้ กด Ctrl+Z ย้อนได้)"),
             lambda: self.import_csv())
@@ -715,7 +734,7 @@ class LadderView(QWidget):
         self.area.setWidget(self.canvas)
         side = QWidget()
         sv = QVBoxLayout(side)
-        sv.setContentsMargins(0, 0, 0, 0)
+        sv.setContentsMargins(6, 0, 0, 0)
         sv.addWidget(QLabel(tr("อุปกรณ์บนผัง (ดับเบิลคลิก = ใช้)")))
         self.addr = QListWidget()
         self.addr.setFocusPolicy(Qt.NoFocus)
@@ -1365,16 +1384,28 @@ class LadderView(QWidget):
     def copy_rungs(self):
         a, b = sorted((self.canvas.rung, self.canvas.rung_to))
         self._clip = self.doc.copy_text(a, b)
+        msg = tr("คัดลอก {0} rung", b - a + 1)
         if not self.exam:
-            QApplication.clipboard().setText(self._clip)
-        self.message.emit(tr("คัดลอก {0} rung", b - a + 1))
+            mime = QMimeData()
+            mime.setText(self._clip)
+            try:
+                mime.setData(GX_MIME, gxclip.clipboard_bytes(self.doc.rungs[a:b + 1]))
+                msg = tr("คัดลอก {0} rung — วางใน GX Works3 ได้ด้วย Ctrl+V (Write Mode F2)", b - a + 1)
+            except LadderError as e:
+                msg += tr(" (วางใน GX Works3 ไม่ได้: {0})", e)
+            QApplication.clipboard().setMimeData(mime)
+        self.message.emit(msg)
 
     def paste_rungs(self):
         if not self.editable():
             return
-        text = self._clip if self.exam else QApplication.clipboard().text()      # สอบ: วางได้เฉพาะที่คัดลอกในด่านนี้
+        mime, dropped = QApplication.clipboard().mimeData(), 0
+        text = self._clip if self.exam else mime.text()      # สอบ: วางได้เฉพาะที่คัดลอกในด่านนี้
+        gx = not self.exam and not text and mime.hasFormat(GX_MIME)
         at = self.canvas.rung + (0 if is_blank(self.doc.rungs[self.canvas.rung]) else 1)
         try:
+            if gx:
+                text, dropped = gxclip.read_text(bytes(mime.data(GX_MIME)))
             n = self.doc.paste_text(at, text)
         except LadderError as e:
             self.message.emit(tr("✖ วางไม่ได้: {0}", e))
@@ -1382,6 +1413,15 @@ class LadderView(QWidget):
         self.after_edit()
         self.canvas.select(self.canvas.first_uid(at), at)
         self.canvas.rung_to = at + n - 1
+        if gx:
+            self.message.emit(tr("วางจาก GX Works3 แล้ว {0} rung", n))
+        if dropped:
+            self.message.emit(tr("⚠ Note / P/I statement {0} รายการไม่ถูกนำเข้า", dropped))
+
+    def select_all(self):
+        self.canvas.select(self.canvas.first_uid(0), 0)
+        self.canvas.rung_to = len(self.doc.rungs) - 1
+        self.canvas.update()
 
     def cut_rungs(self):
         if self.editable():
@@ -1392,7 +1432,7 @@ class LadderView(QWidget):
     def wants_key(self, e) -> bool:
         k, m = e.key(), e.modifiers()
         if m & Qt.ControlModifier:
-            return self._letter(e) in tuple("ZYCXV") or k in (Qt.Key_Delete, Qt.Key_F5, Qt.Key_F6)
+            return self._letter(e) in tuple("ZYCXVA") or k in (Qt.Key_Delete, Qt.Key_F5, Qt.Key_F6)
         return k in (Qt.Key_F4, Qt.Key_F5, Qt.Key_F6, Qt.Key_F7, Qt.Key_F8, Qt.Key_Delete, Qt.Key_Insert, Qt.Key_Space)
 
     @staticmethod
@@ -1418,7 +1458,7 @@ class LadderView(QWidget):
                   Qt.Key_Home: lambda: self.canvas.select(self.canvas.first_uid(0), 0),
                   Qt.Key_End: lambda: self.canvas.select(0, len(self.doc.rungs) - 1)}.get(k)
             fn = fn or {"Z": lambda: self.undo(shift), "Y": self.redo, "C": self.copy_rungs, "V": self.paste_rungs,
-                        "X": self.cut_rungs}.get(self._letter(e))
+                        "X": self.cut_rungs, "A": self.select_all}.get(self._letter(e))
             if fn:
                 fn()
             return bool(fn)
