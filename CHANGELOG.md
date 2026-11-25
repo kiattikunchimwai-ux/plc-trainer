@@ -9,6 +9,30 @@
 - First bullet is the short note shown in the About dialog
 -->
 
+## Unreleased
+### th
+- สร้างห้องด่านของตัวเองได้หลายห้อง แยกจากด่านมาตรฐาน (แก้ไม่ได้ แต่ทำสำเนาไปแก้ได้) คะแนนไม่ปนกัน ส่งต่อเป็นไฟล์ .plcroom
+- ปุ่ม ➕ สร้างด่านของฉัน: เลือกผัง → แม่แบบ → ตั้งชื่อ แล้วเล่นได้เลย
+- ใส่เงื่อนไขด้วยการเลือกเป็นประโยค รู้จักปุ่ม NC เอง เติมค่าพัก/reset ให้ และยังสลับไปตารางคำสั่งเดิมได้
+- AI ในเครื่อง (ไม่ใช้อินเทอร์เน็ต) อ่านเงื่อนไขที่ใส่ บอกว่าเข้าใจงานว่าอะไร เตือนข้อขัดแย้ง/ข้อที่ยังไม่ตรวจ แล้วจำลองข้อผิดที่พบบ่อยเพื่อชี้สาเหตุให้นักเรียน (ไม่มีผลต่อคะแนน ปิดตอนสอบ มีปุ่มล้างความจำ)
+- พิมพ์ข้อความบนผังได้เลย: ดับเบิลคลิกหรือ F2 ที่ป้าย/ชื่ออุปกรณ์/โซน
+- แถบเครื่องมือลอยเหนืออุปกรณ์ที่เลือก, ลากมุมปรับขนาดป้ายและโซน, Ctrl+C/Ctrl+V อุปกรณ์, ปรับสี/ขนาดหลายชิ้นพร้อมกัน, พับกลุ่มคุณสมบัติได้
+- แท็บ Ladder และช่อง address พิมพ์ได้แม้แป้นพิมพ์เป็นภาษาไทย
+- เอาปุ่ม "ให้ Claude อธิบาย" ออก ใช้เฉพาะ AI ในโปรแกรม ทุกคนใช้ได้เหมือนกัน ไม่ต้องมีบัญชีหรืออินเทอร์เน็ต
+- ปุ่มเดียว ▶ รัน Ladder (F4): เชื่อม PLC ในตัวให้เอง ส่ง แล้ว RUN พร้อมข้อความบอกว่าต้องกดอะไรต่อ และปุ่ม ◫ ผัง+Ladder
+- แก้: ตัวแก้ไขด่านทำข้อความภาษาอังกฤษของข้อตรวจหายเมื่อบันทึก, กด Enter ในช่องพิมพ์ไปกดปุ่มอื่น, กด Esc แล้วงานที่พิมพ์หายโดยไม่ถาม
+### en
+- Create several level rooms of your own, separate from the standard levels (read-only, but copyable); scores stay separate and rooms can be shared as .plcroom files
+- ➕ Create my level: choose a panel → a template → a title, then play
+- Enter conditions by choosing sentence parts; NC buttons are handled, idle/reset values are filled in, and the command table is still available
+- On-device AI (no internet) reads your conditions, says what it understands, warns about conflicts and missing checks, and simulates common mistakes to point students to likely causes (no effect on scores, off in exams, memory can be cleared)
+- Type directly on the panel: double-click or press F2 on a note, device name or zone
+- Floating toolbar above the selection, drag a corner to resize notes and zones, Ctrl+C/Ctrl+V devices, change color/size of several items, foldable property groups
+- The Ladder tab and address fields accept typing with the Thai keyboard layout
+- Removed the "Ask Claude" button; only the built-in AI is used, so everyone has the same features with no account or internet
+- One button ▶ Run ladder (F4): connects the built-in PLC, sends and runs, tells you what to press next, plus a ◫ Panel+ladder button
+- Fixed: the level editor lost English check texts on save, Enter in a field pressed another button, Esc discarded typed work without asking
+
 ## 1.0.1 — 2026-11-24
 ### th
 - เขียน ladder ในโปรแกรมได้เลย (แท็บ Ladder) แล้วรันด้วย PLC ในตัว ดูสถานะสด และตรวจด่านได้โดยไม่ต้องมี GX Works3

@@ -102,7 +102,8 @@ def _name(info, addr) -> str:
 
 
 # ======================= วิเคราะห์ผลตรวจด่าน =======================
-def analyze(level, runner, devices: list[DeviceSpec] | None = None) -> list[Finding]:
+def analyze(level, runner, devices: list[DeviceSpec] | None = None, learned: list[Finding] = ()) -> list[Finding]:
+    """learned = สาเหตุที่คาดจากการเรียนรู้เงื่อนไข (ai/learn.py) — ต่อท้ายสิ่งที่วัดได้เสมอ."""
     devices = devices or []
     trc = Trace(runner.trace, runner.events)
     info = _inputs_info(devices)
@@ -155,7 +156,7 @@ def analyze(level, runner, devices: list[DeviceSpec] | None = None) -> list[Find
             f.title = tr("จุดที่ควรแก้ก่อน → ") + f.title
             first = False
         out.append(f)
-    return out
+    return out + list(learned)
 
 
 def _danger_findings(devices, history) -> list[Finding]:

@@ -97,7 +97,7 @@ def test_exam_mode_in_window(app, tmp_state, monkeypatch):
         w.set_edit_mode(True)
         assert w.panel.sc.run_mode and not w.btn_edit.isEnabled()
         assert not w.ribbon.isTabEnabled(1) and not w.ribbon.isTabEnabled(4)
-        assert not w.levelp.ai_enabled and not w.levelp.btn_claude.isEnabled()
+        assert not w.levelp.ai_enabled
         assert not w.btn_student.isEnabled() and not w.faults.isEnabled() and w.b_exam_end.isEnabled()
         n = len(w.panel.items_by_id)
         w._add_from_library("lamp")

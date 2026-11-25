@@ -20,7 +20,7 @@ from PySide6.QtCore import QLocale  # noqa: E402
 from PySide6.QtWidgets import QApplication, QMessageBox  # noqa: E402
 
 from plc_game import classroom  # noqa: E402
-from plc_game.levels import scores  # noqa: E402
+from plc_game.levels import rooms, scores  # noqa: E402
 from plc_game.levels.engine import LEVEL_DIR  # noqa: E402
 from plc_game.main import load_config  # noqa: E402
 from plc_game.ui import state, theme  # noqa: E402
@@ -36,6 +36,7 @@ lvdir = tmp / "levels"
 shutil.copytree(LEVEL_DIR, lvdir, ignore=shutil.ignore_patterns("_trash"))
 real_before = sorted((p.name, p.stat().st_mtime_ns) for p in LEVEL_DIR.iterdir())
 LevelPanel.folder = lvdir
+rooms.create("e2e", lvdir)
 QMessageBox.question = staticmethod(lambda *a, **k: QMessageBox.Yes)
 
 QLocale.setDefault(QLocale(QLocale.English, QLocale.UnitedStates))
@@ -44,6 +45,9 @@ app.setStyle("Fusion")
 app.setStyleSheet(theme.QSS)
 cfg = load_config()
 cfg["backend"] = "mock"
+import tempfile as _tf  # noqa: E402
+from plc_game.ai import learn as _learn  # noqa: E402
+_learn.MEMORY_FILE = Path(_tf.gettempdir()) / "plc_e2e_ai_memory.json"      # ไม่แตะความจำ AI จริง
 w = MainWindow(cfg)
 w.resize(1600, 950)
 w.show()

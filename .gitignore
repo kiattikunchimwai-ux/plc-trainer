@@ -11,6 +11,9 @@ __pycache__/
 panels/scores.json
 panels/students.json
 panels/ui_state.json
+panels/ai_memory.json
+/levels/rooms/
+/levels/_trash/
 panels/ladders/
 /คะแนน.xlsx
 .claude/settings.local.json

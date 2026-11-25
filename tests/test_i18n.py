@@ -139,7 +139,7 @@ import test_i18n as T
 tmp = Path({tmp!r})
 classroom.STUDENT_FILE = tmp / "students.json"; scores.SCORE_FILE = tmp / "scores.json"
 state.PANEL_DIR = tmp; state.STATE_FILE = tmp / "ui_state.json"; state._OLD_LAST = tmp / "last.txt"
-sidebar.ANIMATE = False
+from plc_game.ai import learn; learn.MEMORY_FILE = tmp / "m.json"; sidebar.ANIMATE = False
 from plc_game.ui.main_window import MainWindow
 w = MainWindow({{"backend": "mock", "xy_base": 8}})
 res = {{"lang": i18n.lang(), "bad": T._thai_texts(w),

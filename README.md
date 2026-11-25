@@ -41,6 +41,26 @@
 4. **บันทึกผัง:** 💾 บันทึกเป็นไฟล์ `.plcpanel` ในโฟลเดอร์ `panels/` และเมื่อเปิดโปรแกรมครั้งถัดไปจะเปิดผังล่าสุดให้เอง (ผังตัวอย่างคือ `panels/default.plcpanel`)
 5. **ดูกราฟ:** แท็บ **Chart** ด้านล่าง กด **หยุดกราฟ** แล้วเลื่อนเมาส์เพื่ออ่านค่าย้อนหลัง และเลือกสัญญาณได้ที่แผง LAYERS
 
+## รัน Ladder / Run your ladder
+**ไทย:** แท็บ **Ladder** → วาดวงจร → กด **▶ รัน Ladder (F4)** (เชื่อม PLC ในตัวให้เอง) → กดปุ่มบนผังเพื่อลอง หรือ **▶ ตรวจคำตอบ** · กด **◫ ผัง+Ladder** เพื่อเห็นสองอย่างพร้อมกัน
+
+**English:** **Ladder** tab → draw → click **▶ Run ladder (F4)** (it connects the built-in PLC for you) → press buttons on the panel, or **▶ Check answer** · click **◫ Panel+ladder** to see both
+
+## ห้องด่านของตัวเอง / Your own level rooms
+**ไทย**
+1. แท็บ **ด่าน / ภารกิจ** → **➕ สร้างด่านของฉัน** → ตั้งชื่อห้อง → เลือกผัง แม่แบบ และชื่อด่าน
+2. ใส่เงื่อนไขเป็นประโยค: **➕ สิ่งที่ทำ** (เช่น กด Start) แล้ว **➕ สิ่งที่ต้องเกิด** (เช่น มอเตอร์ติดภายใน 0.5 วินาที)
+3. กล่อง 🧠 AI บอกว่าเข้าใจงานว่าอะไร เตือนข้อขัดแย้ง และเสนอข้อที่ยังไม่ได้ตรวจ ทุกอย่างทำในเครื่อง ไม่ใช้อินเทอร์เน็ต ไม่มีผลต่อคะแนน และปิดในโหมดสอบ
+4. ด่านมาตรฐานแก้ไม่ได้ ให้กด **📋 ทำสำเนาไปห้องของฉัน** · ส่งห้องให้คนอื่นด้วยเมนู ⋯ → ส่งออก `.plcroom`
+5. พิมพ์ข้อความบนผัง: โหมดแก้ไข → ดับเบิลคลิกหรือ F2 ที่ป้าย ชื่ออุปกรณ์ หรือโซน
+
+**English**
+1. **Levels / Missions** tab → **➕ Create my level** → name a room → choose a panel, a template and a title
+2. Build conditions as sentences: **➕ Action** (e.g. press Start), then **➕ Expected result** (e.g. motor on within 0.5 s)
+3. The 🧠 AI box says what it understands, warns about conflicts and suggests missing checks. It runs on this computer without internet, never affects scores and is off in exams
+4. Standard levels are read-only; use **📋 Copy to my room**. Share a room with ⋯ → Export `.plcroom`
+5. Type on the panel: edit mode → double-click or press F2 on a note, device name or zone
+
 ## ติดตั้งและรัน (ทุกอย่างอยู่ในโฟลเดอร์นี้)
 ```powershell
 python -m venv .venv

@@ -176,6 +176,8 @@ def test_main_window_integration(app, win, lvdir):
     win.open_level(0)
     dlg = win.open_level_editor()
     assert dlg is not None and dlg.folder == lvdir and dlg.cur.id == "01_self_hold"
+    assert dlg.locked() and not dlg.ed_title.isEnabled() and dlg.save() is None      # ด่านมาตรฐานแก้ไม่ได้
+    dlg.lock_standard = False
     dlg.ed_title.setText("ด่าน 1: ชื่อใหม่")
     dlg.save()
     app.processEvents()

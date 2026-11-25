@@ -248,6 +248,8 @@ def test_main_window_teaching_tab(app, win, tmp_path):
                             [MacroEvent(0, "Y0", 0, io="out"), MacroEvent(0.5, "X0", 1),
                              MacroEvent(0.55, "Y0", 1, io="out"), MacroEvent(0.8, "X0", 0)], 2.0)
     assert win.save_macro(str(tmp_path / "m.plcmacro")) and win.open_macro(str(tmp_path / "m.plcmacro"))
+    from plc_game.levels import rooms
+    rooms.create("ห้องทดสอบ", win.levelp.root)
     d = win.macro_to_level()
     ed = win._level_editor
     assert d is not None and ed.cur is d and d.path is None and d.panel == "01_self_hold.plcpanel"

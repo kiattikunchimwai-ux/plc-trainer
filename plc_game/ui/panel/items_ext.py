@@ -858,10 +858,14 @@ class NoteItem(DeviceItem):
     def _font(self) -> QFont:
         return QFont("Segoe UI", max(6, round(float(self.prop("size", 10) or 10) * base.SCALE)))
 
+    def _shown(self) -> str:
+        t = tr_data(str(self.prop("text", "") or ""))
+        return t if t.strip() or self.run_mode() else tr("ดับเบิลคลิกเพื่อพิมพ์ข้อความ")
+
     def _text_rect(self) -> QRectF:
         w = float(self.prop("width", 260) or 260) * base.SCALE
         fm = QFontMetricsF(self._font())
-        br = fm.boundingRect(QRectF(0, 0, w, 10000), Qt.TextWordWrap, tr_data(str(self.prop("text", ""))) or " ")
+        br = fm.boundingRect(QRectF(0, 0, w, 10000), Qt.TextWordWrap, self._shown() or " ")
         return QRectF(-w / 2, -br.height() / 2, w, br.height())
 
     def body_rect(self):
@@ -877,7 +881,7 @@ class NoteItem(DeviceItem):
             p.drawRect(self.body_rect())
         p.setFont(self._font())
         p.setPen(_color(self.prop("color", "white"), "#F1F3F5"))
-        p.drawText(self._text_rect(), Qt.TextWordWrap | Qt.AlignLeft | Qt.AlignTop, tr_data(str(self.prop("text", ""))))
+        p.drawText(self._text_rect(), Qt.TextWordWrap | Qt.AlignLeft | Qt.AlignTop, self._shown())
 
     def paint_caption(self, p):
         pass

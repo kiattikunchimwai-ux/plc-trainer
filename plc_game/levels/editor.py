@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from ..i18n import tr
 
+import json
 import re
 import time
 from dataclasses import dataclass, field
@@ -284,6 +285,17 @@ def trash(path: Path, folder: Path = LEVEL_DIR) -> Path:
     return dst
 
 
+def is_standard(path: Path | None, folder: Path = LEVEL_DIR) -> bool:
+    """ด่านที่มากับโปรแกรม (อ่านอย่างเดียวในตัวแก้ไข — ทำสำเนาเข้าห้องเพื่อแก้)."""
+    if path is None or Path(path).parent != Path(folder):
+        return False
+    try:
+        known = json.loads((paths.app_root() / "plc_game" / "shipped_hashes.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return f"levels/{Path(path).name}" in known
+
+
 def load_drafts(folder: Path = LEVEL_DIR) -> list[LevelDraft]:
     ds = []
     for p in sorted(Path(folder).glob("*.yaml")):
@@ -328,6 +340,8 @@ def panel_choices(folder: Path = LEVEL_DIR) -> list[tuple[str, str]]:
     """[(ข้อความแสดง, ค่าที่เขียนใน YAML)] — ผังของด่าน (levels/) และฉากตัวอย่าง (panels/)."""
     out = [(p.name, p.name) for p in sorted(Path(folder).glob("*.plcpanel"))]
     out += [(tr("ฉาก: {0}", p.name), f"panels/{p.name}") for p in sorted(paths.data_dir().glob("*.plcpanel"))]
+    if Path(folder).parent.name == "rooms":             # ในห้องของผู้ใช้: ใช้ผังของด่านมาตรฐานได้ด้วย
+        out += [(tr("ด่านมาตรฐาน: {0}", p.name), f"levels/{p.name}") for p in sorted(paths.levels_dir().glob("*.plcpanel"))]
     return out
 
 

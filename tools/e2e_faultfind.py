@@ -34,6 +34,9 @@ random.seed(int(sys.argv[2]) if len(sys.argv) > 2 else 4)
 
 cfg = load_config()
 cfg["backend"] = "mock"
+import tempfile as _tf  # noqa: E402
+from plc_game.ai import learn as _learn  # noqa: E402
+_learn.MEMORY_FILE = Path(_tf.gettempdir()) / "plc_e2e_ai_memory.json"      # ไม่แตะความจำ AI จริง
 w = MainWindow(cfg)
 w.resize(1600, 950)
 w.show()

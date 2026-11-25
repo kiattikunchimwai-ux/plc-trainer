@@ -20,7 +20,6 @@ from PySide6.QtWidgets import (
 )
 
 from .. import classroom, i18n, support
-from ..ai import llm
 from ..levels import FaultHunt, scores
 from ..ladder.check import check as check_ladder
 from ..ladder.model import Ladder
@@ -183,6 +182,7 @@ class MainWindow(QMainWindow):
         self.ladderv = LadderView(self.xy_base)
         self.ladderv.message.connect(lambda m: self.log(m))
         self.ladderv.send_requested.connect(lambda: self.send_ladder())
+        self.ladderv.split_requested.connect(self._split_ladder)
         self.ladderv.learn_requested.connect(lambda: self.start_tutorial(ladder=True))
         self.ladderv.control.connect(lambda what: self.soft_control(what))
         self.ladderv.soft = lambda: self.soft
@@ -223,11 +223,13 @@ class MainWindow(QMainWindow):
         self.macro.message.connect(lambda s: self.log(s))
         self.macro.state_changed.connect(lambda s: self._on_macro_state(s))
         self.panel.selection_changed.connect(self.props.set_item)
+        self.panel.props_requested.connect(lambda: self.side_r.open("props"))
         self.panel.changed.connect(self._on_panel_changed)
         self.panel.status.connect(lambda s: self.lbl_cursor.setText(s))
         self.library.add_requested.connect(self._add_from_library)
 
         self._build_ribbon()
+        self.levelp.set_room(str(state.load().get("exam_room" if state.load().get("exam") else "room") or ""))
         self._fill_levels()
         self._build_space()
         self._build_docks()
@@ -569,8 +571,19 @@ class MainWindow(QMainWindow):
         h = QHBoxLayout(tab)
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(0)
+        self.cb_room = QComboBox()
+        self.cb_room.setToolTip(tr("ห้องด่าน: ด่านมาตรฐาน หรือห้องที่คุณสร้างเอง"))
+        self.cb_room.activated.connect(lambda _i: self.set_room(self.cb_room.currentData()))
+        self.b_room = tool_button(tr("🏠  จัดการห้องด่าน"))
+        self.b_room.setToolTip(tr("สร้างห้องของตัวเอง แก้ด่าน ส่งออก/นำเข้าห้อง"))
+        self.b_room.clicked.connect(lambda: self.open_level_editor())
+        self.b_new_level = tool_button(tr("➕  สร้างด่าน\nของฉัน"))
+        make_tall(self.b_new_level)
+        self.b_new_level.setToolTip(tr("เลือกผัง เลือกแม่แบบ ตั้งชื่อ แล้วได้ด่านพร้อมเล่นในห้องของคุณ"))
+        self.b_new_level.clicked.connect(lambda: self.new_level())
+        h.addWidget(ribbon_group(tr("ห้องด่าน"), [[self.cb_room, self.b_new_level], [self.b_room, None]]))
         self.cb_level = QComboBox()
-        self.cb_level.setMinimumWidth(360)
+        self.cb_level.setMinimumWidth(300)
         b_open = tool_button(tr("📖  เปิดด่าน"))
         b_open.setToolTip(tr("โหลดผังของด่านและแสดงโจทย์"))
         b_open.clicked.connect(lambda: self.open_level(self.cb_level.currentIndex()))
@@ -753,14 +766,13 @@ class MainWindow(QMainWindow):
             self.log(tr("ยังไม่มีการกดที่บันทึกไว้ — กด ⏺ บันทึกการกด ก่อน (เชื่อม PLC ด้วย จะได้ expect จาก output)"))
             return None
         dlg = self.open_level_editor()
-        if dlg is None:
+        if dlg is None or not dlg._need_room():
             return None
         panel = ""
         if self.panel_path is not None:
-            from ..levels.editor import panel_choices
-            vals = [v for _, v in panel_choices(dlg.folder)]
-            name = self.panel_path.name
-            panel = name if name in vals else (f"panels/{name}" if f"panels/{name}" in vals else "")
+            from ..levels import rooms
+            panel = rooms.add_panel(dlg.room, *dlg.current_panel())       # ผังที่กดบันทึก ไปอยู่กับด่านในห้อง
+            dlg.reload()
         d = to_draft(m, dlg.drafts, panel)
         dlg.add_draft(d)
         return d
@@ -780,13 +792,8 @@ class MainWindow(QMainWindow):
         b_ladder = tool_button(tr("📄  เลือก CSV\nladder"))
         make_tall(b_ladder)
         b_ladder.clicked.connect(self.choose_ladder)
-        b_claude = tool_button(tr("💬  ให้ Claude\nอธิบายเพิ่ม"))
-        make_tall(b_claude)
-        b_claude.clicked.connect(lambda: (self.show_levels(), self.levelp.ask_claude()))
-        h.addWidget(ribbon_group(tr("วิเคราะห์ความผิดพลาด (คะแนนดูจาก I/O เท่านั้น)"), [[b_last, b_live, b_ladder, b_claude]]))
-        ok, why = llm.available()
-        self.lbl_ai = QLabel(tr("ตัววิเคราะห์ในเครื่อง: พร้อมใช้ (ไม่ต้องใช้อินเทอร์เน็ต)\n")
-                             + (tr("Claude: พร้อมใช้") if ok else tr("Claude: ยังไม่พร้อม — {0}", why)))
+        h.addWidget(ribbon_group(tr("วิเคราะห์ความผิดพลาด (คะแนนดูจาก I/O เท่านั้น)"), [[b_last, b_live, b_ladder]]))
+        self.lbl_ai = QLabel(tr("ตัววิเคราะห์ในเครื่อง: พร้อมใช้ (ไม่ต้องใช้อินเทอร์เน็ต)"))
         self.lbl_ai.setStyleSheet(f"color:{theme.TEXT_DIM}; padding:0 10px;")
         h.addWidget(self.lbl_ai)
         h.addStretch(1)
@@ -794,6 +801,7 @@ class MainWindow(QMainWindow):
 
     def _fill_levels(self):
         levels = self.levelp.reload(self.xy_base)
+        self._fill_rooms()
         best = self.levelp.best()
         cur = self.cb_level.currentIndex()
         self.cb_level.clear()
@@ -802,6 +810,43 @@ class MainWindow(QMainWindow):
         if 0 <= cur < self.cb_level.count():
             self.cb_level.setCurrentIndex(cur)
         return levels
+
+    def _fill_rooms(self):
+        from ..levels import rooms
+        cb, cur = self.cb_room, self.levelp.room
+        cb.clear()
+        cb.addItem(tr("📚 ด่านมาตรฐาน"), "")
+        for r in rooms.list_rooms(self.levelp.root):
+            cb.addItem("🏠 " + r.name, r.key)
+        cb.setCurrentIndex(max(0, cb.findData(cur.key if cur else "")))
+
+    def set_room(self, key: str, save: bool = True) -> bool:
+        if key == (self.levelp.room.key if self.levelp.room else ""):
+            return True
+        if self.exam or self.levelp.busy:
+            self.log(tr("เปลี่ยนห้องด่านระหว่างสอบ/ตรวจคำตอบไม่ได้"))
+            self._fill_rooms()
+            return False
+        ok = self.levelp.set_room(key)
+        self._fill_levels()
+        self.cb_level.setCurrentIndex(0 if self.cb_level.count() else -1)
+        if save:
+            state.update(room=key if ok else "")
+            self.log(tr("ห้องด่าน: {0} ({1} ด่าน)", self.cb_room.currentText(), len(self.levelp.levels)))
+        return ok
+
+    def new_level(self):
+        dlg = self.open_level_editor()
+        return dlg.create_level() if dlg is not None else None
+
+    def _check_level(self, lid: str):
+        self._open_level_by_id(lid)
+        if self.levelp.level is not None and self.levelp.level.id == lid:
+            self.start_check()
+
+    def _room_of(self, lid: str) -> str:
+        from ..levels import rooms
+        return next((r.key for r in rooms.list_rooms(self.levelp.root) if lid.startswith(r.key + rooms.SEP)), "")
 
     def show_levels(self):
         self.d_level.show()
@@ -812,15 +857,24 @@ class MainWindow(QMainWindow):
         if self._exam_locked(tr("เปิดตัวแก้ไขด่าน")):
             return None
         from .level_editor import LevelEditorDialog
+        room = self.levelp.room
         if select is None and self.levelp.level is not None:
             select = self.levelp.level.id
+            if room is not None:
+                select = select.removeprefix(room.level_id(""))
         dlg = getattr(self, "_level_editor", None)
         if dlg is None:
             from ..levels.engine import LEVEL_DIR
-            dlg = LevelEditorDialog(self, self.xy_base, folder=self.levelp.folder or LEVEL_DIR, select=select)
+            dlg = LevelEditorDialog(self, self.xy_base, folder=self.levelp.folder or LEVEL_DIR, select=select,
+                                    room=room.key if room else "", lock_standard=True)
+            dlg.memory = self.levelp.coach.mem
+            dlg.current_panel = lambda: (self.panel.flush_commit(), (self.panel.to_doc(), self.panel_path.stem if self.panel_path else self.panel.doc_name))[1]
+            dlg.rooms_changed.connect(self._fill_levels)
+            dlg.try_requested.connect(self._check_level)
             dlg.saved.connect(self._on_level_saved)
             dlg.open_requested.connect(self._open_level_by_id)
             dlg.finished.connect(lambda _r: setattr(self, "_level_editor", None))
+            dlg.destroyed.connect(lambda: setattr(self, "_level_editor", None))     # ปิดตอนซ่อนอยู่ = ไม่มี finished
             dlg.setAttribute(Qt.WA_DeleteOnClose)
             self._level_editor = dlg
         dlg.show()
@@ -836,6 +890,8 @@ class MainWindow(QMainWindow):
             self._open_level_by_id(lid)            # ด่านที่เปิดอยู่ถูกแก้ → เปิดใหม่ให้เห็นโจทย์ล่าสุด
 
     def _open_level_by_id(self, lid: str):
+        if not self.exam:
+            self.set_room(self._room_of(lid))
         ids = [lv.id for lv in self.levelp.levels]
         if lid in ids:
             self.open_level(ids.index(lid))
@@ -1322,6 +1378,9 @@ class MainWindow(QMainWindow):
             self.tutorial.finish(False)
         if self.levelp.busy:
             self.stop_check()
+        dlg = getattr(self, "_level_editor", None)
+        if dlg is not None:                  # ตัวแก้ไขด่านที่เปิดค้าง = เห็น AI/เงื่อนไขระหว่างสอบ
+            dlg.hide_for_exam()
         self.set_hmi(False)
         if not resumed:
             session.student = self.levelp.student
@@ -1383,7 +1442,7 @@ class MainWindow(QMainWindow):
 
     def _save_exam(self):
         if self.exam:
-            state.update(exam=self.exam.to_dict())
+            state.update(exam=self.exam.to_dict(), exam_room=self.levelp.room.key if self.levelp.room else "")
 
     def _apply_exam_lock(self, on: bool):
         for i in (1, 4):                                   # แท็บ แก้ไขผัง / AI วิเคราะห์
@@ -1391,7 +1450,7 @@ class MainWindow(QMainWindow):
         if on and self.ribbon.currentIndex() in (1, 4):
             self.ribbon.setCurrentIndex(2)
         for w in (self.btn_edit, self.btn_edit2, self.st_mode, self.btn_student, self.library, self.faults,
-                  *self._teacher_lockables):
+                  self.cb_room, self.b_room, self.b_new_level, *self._teacher_lockables):
             w.setEnabled(not on)
         self.b_exam_end.setEnabled(on)
         self.levelp.set_ai_enabled(not on)
@@ -1613,6 +1672,13 @@ class MainWindow(QMainWindow):
         for s in (self.side_l, self.side_r):
             s.save()
 
+    def _split_ladder(self):
+        """สลับแบ่งจอผัง+Ladder จากแท็บ Ladder (Ladder ยังเปิดอยู่)."""
+        on = self.stack.currentWidget() is not self.splitter
+        self.set_split(on)
+        self.show_view(self.ladderv)
+        self.ladderv.canvas.setFocus()
+
     def set_split(self, on: bool):
         """แบ่งจอ: ผังด้านบน + กราฟด้านล่าง แทนการสลับแท็บ."""
         if on and self.stack.currentWidget() is not self.splitter:
@@ -1691,7 +1757,7 @@ class MainWindow(QMainWindow):
             lad = (name, tr("ด่านหาจุดเสียไม่ต้องเขียน ladder"), True, True)
         elif self.soft is not None:
             ok = self.soft.state == "run" and not self.ladderv.unsent
-            lad = (name, tr("วาด ladder ในแท็บ Ladder แล้วกด F4 ส่งลง PLC"), ok, True)
+            lad = (name, tr("วาด ladder ในแท็บ Ladder แล้วกด ▶ รัน Ladder (F4)"), ok, True)
         elif kind == "slmp":
             lad = (name, tr("เขียนใน GX Works3 แล้ว Write ลง PLC — หรือเลือก PLC ในตัวเพื่อวาดในโปรแกรมนี้"), online, True)
         else:
@@ -1940,6 +2006,7 @@ class MainWindow(QMainWindow):
         self._update_title()
 
     def _confirm_discard(self) -> bool:
+        self.panel.finish_text()
         if not self.dirty:
             return True
         r = QMessageBox.question(self, tr("ผังยังไม่ได้บันทึก"), tr("บันทึกผังปัจจุบันก่อนไหม?"),
@@ -2034,7 +2101,9 @@ class MainWindow(QMainWindow):
         if not self.btn_edit.isChecked():
             self.set_edit_mode(True)
         self.show_view(self.panel)
-        self.panel.add_device(kind)
+        it = self.panel.add_device(kind)
+        if kind == "note" and not self.panel.sc.run_mode:      # วางป้ายแล้วพิมพ์ได้เลย
+            self.panel.edit_text(it)
 
     def _on_panel_changed(self):
         self.dirty = not self.panel.undo.isClean() or self.panel._commit_timer.isActive()
@@ -2159,6 +2228,9 @@ class MainWindow(QMainWindow):
             return False
         if not v.editable():
             return False
+        if v.empty and self.soft is None:
+            self.log(tr("ยังไม่ได้วาด ladder — กด F5 แล้วพิมพ์ X0 (หรือกด 🎓 บทเรียน)"))
+            return False
         v.canvas.close_editor()
         c = v.doc.compile()
         probs = check_ladder(Ladder(c.program, self.xy_base))
@@ -2171,8 +2243,7 @@ class MainWindow(QMainWindow):
                 v.goto_uid(uid, n)
             return False
         if self.soft is None:
-            self.log(tr("✔ ladder ถูกรูปแบบ — เลือก PLC ในตัว ที่มุมบนแล้วกดเชื่อมต่อเพื่อรัน"))
-            return False
+            return False if auto or v.empty else self._run_on_builtin()
         self.soft.load(c.program)
         v.mark_sent(c)
         v.flush()
@@ -2181,8 +2252,23 @@ class MainWindow(QMainWindow):
             self.poller.set_watch(self._watch_blocks())
         if self.online:
             self._write_input_states()
-        self.log(tr("✔ PLC ในตัว RUN: {0} คำสั่ง", len(c.program.instrs)))
+        self.log(tr("✔ Ladder ทำงานแล้ว ({0} คำสั่ง) — ไปที่ผังแล้วกดปุ่มเพื่อลอง หรือกด ▶ ตรวจคำตอบ", len(c.program.instrs)))
         return True
+
+    def _run_on_builtin(self) -> bool:
+        """กดรัน ladder ขณะยังไม่ได้ใช้ PLC ในตัว → เชื่อมให้เองแล้วรัน (ต่อ PLC อื่นอยู่ = ถามก่อน)."""
+        if self.levelp.busy:
+            self.log(tr("กำลังตรวจอยู่ — รอให้จบก่อน"))
+            return False
+        if self.poller is not None:
+            if QMessageBox.question(self, tr("รัน Ladder"), tr("ตอนนี้เชื่อม {0} อยู่ ซึ่งไม่ได้รัน ladder ที่วาดในโปรแกรม\nสลับไป PLC ในตัวแล้วรันเลยไหม?", self.cb_backend.currentText()),
+                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes) != QMessageBox.Yes:
+                return False
+            self.disconnect_plc()
+        self.ladderv.flush()
+        self.cb_backend.setCurrentIndex(self.cb_backend.findData("soft"))
+        self.connect_plc()                       # เชื่อมแล้วส่ง ladder ที่เปิดอยู่ให้เอง
+        return self.soft is not None and (not self.ladderv.unsent or self.send_ladder(auto=True))
 
     def soft_control(self, what: str):
         if self.soft is None or not self.ladderv.editable():
@@ -2514,6 +2600,7 @@ class MainWindow(QMainWindow):
         return ""
 
     def closeEvent(self, e):
+        self.panel.flush_commit()
         if not self._confirm_discard():
             e.ignore()
             return
@@ -2525,6 +2612,9 @@ class MainWindow(QMainWindow):
 
         ถ้าไม่ทำ การลบหน้าต่างที่ยังมี filter/กราฟทำงานอยู่ทำให้ process abort แบบสุ่มตอนปิด (เรียกซ้ำได้)
         """
+        dlg = getattr(self, "_level_editor", None)
+        if dlg is not None:
+            dlg.stop_threads()
         self.disconnect_plc()
         self.ladderv.shutdown()
         self.levelp.shutdown()

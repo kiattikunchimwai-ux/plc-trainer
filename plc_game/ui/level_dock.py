@@ -6,7 +6,7 @@ from ..i18n import tr
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
     QFileDialog, QHBoxLayout, QLabel, QProgressBar, QPushButton, QSplitter, QTextBrowser, QTreeWidget, QTreeWidgetItem,
@@ -14,13 +14,15 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
-from ..ai import Finding, analyze, analyze_live, llm
+from ..ai import Finding, analyze, analyze_live
 from .. import ladder
 from ..ladder.model import Ladder
 from ..ladder.replay import watch_addresses
 from .. import classroom
-from ..levels import FaultHunt, LevelRunner, load_all, scores
+from ..levels import FaultHunt, LevelRunner, load_all, rooms, scores
+from ..ai import learn, spec
 from . import state, theme
+from .learn_worker import LearnWorker
 
 STAR = "★"
 AI_LOCKED_HTML = tr("<p style='color:#FFD43B'>🔒 โหมดสอบ: ปิด AI วิเคราะห์ — ดูผลรายข้อด้านบนได้อย่างเดียว</p>")
@@ -46,22 +48,6 @@ def findings_html(findings, link=False) -> str:
 
 def _esc(s) -> str:
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
-class _ClaudeWorker(QThread):
-    done = Signal(str, bool)          # ข้อความ, สำเร็จไหม
-
-    def __init__(self, prompt: str, parent=None):
-        super().__init__(parent)
-        self.prompt = prompt
-
-    def run(self):
-        try:
-            self.done.emit(llm.explain(self.prompt), True)
-        except llm.LLMUnavailable as e:
-            self.done.emit(str(e), False)
-        except Exception as e:  # noqa: BLE001 — แสดงข้อผิดพลาดที่ไม่คาดคิดให้ผู้ใช้เห็น ไม่ให้โปรแกรมล้ม
-            self.done.emit(tr("เกิดข้อผิดพลาด: {0}", e), False)
 
 
 class _LadderWorker(QThread):
@@ -103,7 +89,6 @@ class LevelPanel(QWidget):
         self.findings = []
         self.student = scores.GUEST
         self.plc = "none"                # PLC ที่เชื่อมอยู่ (mock / soft / slmp) — จดไว้กับคะแนน
-        self._worker = None
         self._ladder_worker = None
         self._old_workers = []           # ที่สั่งยกเลิกแล้วแต่ thread ยังไม่จบ
         self.ladder_path: Path | None = None
@@ -113,6 +98,8 @@ class LevelPanel(QWidget):
         self._checked = None             # Program จากแท็บ Ladder ตอนเริ่มตรวจครั้งล่าสุด
         self._ladder_stamp = None
         self.ladder_error = ""
+        self.coach = learn.Coach()
+        self._learner = None
         self.ai_enabled = True           # โหมดสอบปิด AI วิเคราะห์
 
         lay = QVBoxLayout(self)
@@ -170,12 +157,8 @@ class LevelPanel(QWidget):
         hr = QHBoxLayout()
         t = QLabel(tr("🤖 AI วิเคราะห์"))
         t.setStyleSheet("font-weight:bold;")
-        self.btn_claude = QPushButton(tr("💬 ให้ Claude อธิบายเพิ่ม"))
-        self.btn_claude.setToolTip(tr("ส่งผลตรวจ (ไม่มีชื่อนักเรียน) ให้ Claude อธิบายแบบครู — ต้องมีอินเทอร์เน็ตและ API key"))
-        self.btn_claude.clicked.connect(self.ask_claude)
         hr.addWidget(t)
         hr.addStretch(1)
-        hr.addWidget(self.btn_claude)
         bl.addLayout(hr)
         self.ai = QTextBrowser()
         self.ai.setOpenLinks(False)
@@ -191,12 +174,30 @@ class LevelPanel(QWidget):
     folder = None                       # None = levels/ ของโปรเจกต์ (test ตั้งเป็นโฟลเดอร์ชั่วคราว)
 
     xy_base = 8
+    room = None                         # rooms.Room ที่เลือก (None = ด่านมาตรฐาน)
+
+    @property
+    def root(self) -> Path:
+        from ..levels.engine import LEVEL_DIR
+        return Path(self.folder or LEVEL_DIR)
+
+    def set_room(self, key: str) -> bool:
+        """เลือกห้องด่าน ("" = ด่านมาตรฐาน) — คืน False ถ้าห้องไม่อยู่แล้ว (กลับไปด่านมาตรฐาน)."""
+        self.room = rooms.get(key, self.root) if key else None
+        self.reload(self.xy_base)
+        return bool(self.room) or not key
 
     def reload(self, xy_base: int = 8):
         self.xy_base = xy_base
-        from ..levels.engine import LEVEL_DIR
+        if self.room is not None:
+            self.room = rooms.get(self.room.key, self.root)      # ถูกลบ/เปลี่ยนชื่อในตัวแก้ไข
+        if self.room is not None:
+            self.levels, bad = rooms.load_levels(self.room, xy_base)
+            for e in bad:
+                self.message.emit(tr("✖ โหลดด่านไม่ได้: {0}", e))
+            return self.levels
         try:
-            self.levels = load_all(self.folder or LEVEL_DIR, xy_base=xy_base)
+            self.levels = load_all(self.root, xy_base=xy_base)
         except (OSError, ValueError) as e:
             self.levels = []
             self.message.emit(tr("✖ โหลดด่านไม่ได้: {0}", e))
@@ -325,6 +326,7 @@ class LevelPanel(QWidget):
     def shutdown(self):
         """ปิดโปรแกรม: รอ thread วิเคราะห์ให้จบก่อน widget ถูกลบ."""
         self._cancel_ladder()
+        self._stop_learning()
         for w in list(self._old_workers):
             w.wait(8000)
 
@@ -335,7 +337,7 @@ class LevelPanel(QWidget):
             return
         self._read_ladder()
         prog = self._checked or (None if self.builtin_on else self.program)   # ladder ที่ใช้ตรวจจริง แม้แก้ต่อไปแล้ว
-        self.findings = analyze(self.level, self.last_runner, self._devices())
+        self.findings = analyze(self.level, self.last_runner, self._devices(), self._learned(score_key is not None))
         html = findings_html(self.findings)
         if self.ladder_path is not None and prog is None and not self.builtin_on:
             html += tr("<p style='color:#FFD43B'>📄 อ่าน ladder ไม่ได้: {0}</p>", _esc(self.ladder_error))
@@ -348,6 +350,51 @@ class LevelPanel(QWidget):
             w.start()
         self.ai.setHtml(html)
         self._sync_buttons()
+
+    def learn_now(self):
+        """เรียนรู้จากเงื่อนไขของด่านที่เปิดในเบื้องหลัง (ไม่ทำตอนสอบและตอนกำลังตรวจ)."""
+        self._stop_learning()
+        if not self.ai_enabled or self.level is None or self.level.is_fault_hunt or self.busy:
+            return
+        try:
+            p = spec.analyze_spec(self.level, self._devices(), self.xy_base)
+        except Exception as e:  # noqa: BLE001 — ส่วนเสริม
+            self.message.emit(tr("AI เรียนรู้จากเงื่อนไขไม่สำเร็จ: {0}", e))
+            return
+        if p.physics or self.coach.mem.model(self.level.id, p.hash) is not None:
+            return
+        w = self._learner = LearnWorker(self.level, p, self.xy_base, self)
+        w.done.connect(self._learn_done)
+        w.finished.connect(self._worker_ended)
+        w.start()
+
+    def _learn_done(self, w, m):
+        if w is self._learner and m.status in ("ok", "unknown") and self.ai_enabled:
+            self.coach.mem.store(w.level.id, m)
+        self._stop_learning()
+
+    def _stop_learning(self):
+        w, self._learner = self._learner, None
+        if w is not None:
+            w.cancelled = True
+            self._old_workers.append(w)
+
+    def _learned(self, fresh: bool):
+        """สาเหตุที่คาดจากการเรียนรู้เงื่อนไขของด่าน (fresh = เพิ่งตรวจ → จำผลไปปรับความแม่น)."""
+        if not self.ai_enabled or self.level.is_fault_hunt:
+            return []
+        try:
+            p = spec.analyze_spec(self.level, self._devices(), self.xy_base)
+            mem = self.coach.mem
+            self.learn_now()                      # ยังไม่เคยเรียน (เปลี่ยนผัง/เงื่อนไข) → เรียนไว้ใช้ครั้งถัดไป
+            if any(it.fault for it in self.view.fault_items()):
+                return []                         # ครูใส่ของเสียไว้ อาการไม่ได้มาจาก ladder อย่างเดียว
+            if fresh:
+                return self.coach.after_check(self.student, self.level, self.last_runner, p)
+            return learn.findings(learn.match(self.level, self.last_runner, mem.model(self.level.id, p.hash), mem), p.names)
+        except Exception as e:  # noqa: BLE001 — ส่วนเสริม ต้องไม่ทำให้ผลตรวจหาย
+            self.message.emit(tr("AI เรียนรู้จากเงื่อนไขไม่สำเร็จ: {0}", e))
+            return []
 
     def _ladder_done(self, w, found):
         if w is not self._ladder_worker:             # ถูกยกเลิก (เปลี่ยนด่าน/ตรวจใหม่/เข้าโหมดสอบ)
@@ -395,6 +442,7 @@ class LevelPanel(QWidget):
                             + ("" if self.ai_enabled else AI_LOCKED_HTML))
         self.restore_ladder()
         self._sync_buttons()
+        QTimer.singleShot(600, self, lambda: self._learner or self.learn_now())       # หลังผังของด่านโหลดเสร็จ
 
     def set_plc(self, kind: str):
         self.plc = kind
@@ -474,6 +522,7 @@ class LevelPanel(QWidget):
         if not self.level:
             return False
         self._cancel_ladder()
+        self._stop_learning()               # ไม่แย่ง CPU กับการจับเวลาตอนตรวจ
         self._checked = self.builtin if self.builtin_on and self.ai_enabled else None
         self.runner = LevelRunner(self.level, write, action)
         self.runner.plc = self.plc
@@ -610,8 +659,6 @@ class LevelPanel(QWidget):
         running = self.busy
         self.btn_check.setEnabled(bool(self.level) and not running)
         self.btn_stop.setEnabled(running)
-        self.btn_claude.setEnabled(self.ai_enabled and self.last_runner is not None and not running
-                                   and self._worker is None and self._ladder_worker is None)
         self.ladder_row.setVisible(bool(self.level) and not self.level.is_fault_hunt)
         self.btn_ladder.setEnabled(self._ladder_allowed())
         self.btn_ladder_clear.setEnabled(self._ladder_allowed())
@@ -622,6 +669,8 @@ class LevelPanel(QWidget):
         self._ladder_stamp = None
         self._read_ladder()
         if not on:
+            self.coach.reset()
+            self._stop_learning()
             self._cancel_ladder()
             self.findings = []
             self.ai.setHtml(AI_LOCKED_HTML)
@@ -637,26 +686,3 @@ class LevelPanel(QWidget):
         self.ai.setHtml(tr("<p><i>วิเคราะห์จากสัญญาณที่กดเล่นล่าสุด</i></p>") + findings_html(fs))
         return fs
 
-    def ask_claude(self):
-        if not (self.level and self.last_runner) or self._worker or not self.ai_enabled:
-            return
-        ok, why = llm.available()
-        if not ok:
-            self.ai.append(tr("<p style='color:#FFD43B'>💬 ใช้ Claude ไม่ได้: {0}<br>ผลวิเคราะห์ด้านบนมาจากตัววิเคราะห์ในเครื่อง ใช้ได้โดยไม่ต้องมีอินเทอร์เน็ต</p>", _esc(why)))
-            return
-        prompt = llm.build_prompt(self.level, self.last_runner, self.findings, self._devices())
-        self.ai.append(tr("<p style='color:#74C0FC'>💬 กำลังถาม Claude…</p>"))
-        self._worker = _ClaudeWorker(prompt, self)
-        self._worker.done.connect(self._claude_done)
-        self._worker.finished.connect(self._worker.deleteLater)
-        self._worker.start()
-        self._sync_buttons()
-
-    def _claude_done(self, text, ok):
-        self._worker = None
-        if ok:
-            self.ai.append(tr("<hr><p><b style='color:#74C0FC'>💬 Claude อธิบาย</b></p>"))
-            self.ai.append(_esc(text).replace("\n", "<br>"))
-        else:
-            self.ai.append(f"<p style='color:#FFD43B'>💬 {_esc(text)}</p>")
-        self._sync_buttons()

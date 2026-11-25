@@ -9,6 +9,22 @@ if os.environ.get("PLC_LANG") != "pseudo":
     os.environ["PLC_LANG"] = "th"
 
 
+import tempfile  # noqa: E402
+
+import pytest  # noqa: E402
+
+from plc_game.ai import learn as _learn  # noqa: E402
+
+_learn.MEMORY_FILE = Path(tempfile.gettempdir()) / "plc_test_ai_memory.json"      # timer ที่ยิงหลัง fixture คืนค่า
+
+
+@pytest.fixture(autouse=True)
+def _no_real_ai_memory(tmp_path_factory, monkeypatch):
+    """ไม่แตะความจำ AI จริงของผู้ใช้ (panels/ai_memory.json)."""
+    from plc_game.ai import learn
+    monkeypatch.setattr(learn, "MEMORY_FILE", tmp_path_factory.mktemp("ai") / "ai_memory.json")
+
+
 def pytest_sessionfinish(session, exitstatus):
     """ลบ widget ที่ test ทิ้งไว้ตอนจบ session ขณะ QApplication ยังอยู่ ตามลำดับที่ปลอดภัย.
 

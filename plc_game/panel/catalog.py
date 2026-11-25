@@ -420,7 +420,7 @@ _K = [
              aliases="safety relay module emergency stop dual channel monitored reset category"),
     # ---------- ข้อความ / กรอบ ----------
     KindInfo("note", tr("ข้อความ (Text)"), "annotation", "none", (),
-             defaults={"label": "", "text": tr("พิมพ์คำอธิบายที่ Properties"), "size": 10, "width": 260,
+             defaults={"label": "", "text": "", "size": 10, "width": 260,
                        "color": "white"},
              desc=tr("ข้อความอธิบายบนผัง เช่น โจทย์ หรือตาราง I/O"), aliases="text note label comment"),
     KindInfo("zone", tr("กรอบโซน (Zone)"), "annotation", "none", (),

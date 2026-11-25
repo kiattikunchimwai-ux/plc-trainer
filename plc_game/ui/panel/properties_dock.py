@@ -7,7 +7,7 @@ from ...i18n import tr
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox, QDoubleSpinBox, QFormLayout, QFrame, QGroupBox, QLabel, QLineEdit, QPlainTextEdit, QScrollArea,
-    QSpinBox, QVBoxLayout, QWidget,
+    QSpinBox, QToolButton, QVBoxLayout, QWidget,
 )
 
 from ...panel.catalog import CATALOG, IN_KINDS, LAMP_COLORS
@@ -15,6 +15,7 @@ from ...panel.model import conflicts, validate_address
 from ...panel.presets import presets_for
 from ...panel.specs import COLORABLE
 from .. import theme
+from ..thai_keys import latin_only
 
 COLOR_TH = {"green": tr("เขียว"), "red": tr("แดง"), "orange": tr("ส้ม"), "yellow": tr("เหลือง"), "blue": tr("น้ำเงิน"), "white": tr("ขาว")}
 IO_HINT = {"in": "→ PLC", "out": "PLC →", "word": "PLC →", "wordin": "→ PLC"}
@@ -147,7 +148,7 @@ class PropertiesPanel(QWidget):
             cb.currentIndexChanged.connect(lambda i, cb=cb: self._set("contact", cb.itemData(i)))
             form.addRow(tr("หน้าสัมผัส"), cb)
             self.fields["contact"] = cb
-            ed_key = QLineEdit(item.key)
+            ed_key = latin_only(QLineEdit(item.key))
             ed_key.setMaxLength(1)
             ed_key.setFixedWidth(44)
             ed_key.setStyleSheet("font-family: Consolas;")
@@ -162,7 +163,7 @@ class PropertiesPanel(QWidget):
         if slots:
             g, form = _card(tr("🔌 การต่อสาย I/O"))
             for slot in slots:
-                ed = QLineEdit(str(item.prop(slot.prop, "") or ""))
+                ed = latin_only(QLineEdit(str(item.prop(slot.prop, "") or "")))
                 ed.setStyleSheet("font-family: Consolas;")
                 ed.setPlaceholderText(" / ".join(slot.prefixes) + (tr(" (เว้นว่างได้)") if slot.optional else ""))
                 msg = QLabel()
@@ -180,8 +181,9 @@ class PropertiesPanel(QWidget):
         for grp in ("spec", "sim"):
             fs = [f for f in info.specs if f.group == grp]
             if fs:
-                g, form = _card(GROUP_TITLE[grp])
+                g, form = _card("")
                 self._add_fields(form, fs)
+                lay.addWidget(self._folder(grp, g))
                 lay.addWidget(g)
 
         # ---------- คำอธิบาย ----------
@@ -198,6 +200,24 @@ class PropertiesPanel(QWidget):
         h.setStyleSheet(f"color:{theme.TEXT_DIM}; font-size:8pt;")
         lay.addWidget(h)
         lay.addStretch(1)
+
+    _closed: set = set()                # กลุ่มที่ผู้ใช้พับไว้ (จำระหว่างเปิดโปรแกรม)
+
+    def _folder(self, grp: str, body: QWidget) -> QToolButton:
+        b = QToolButton()
+        b.setText(GROUP_TITLE[grp])
+        b.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        b.setCheckable(True)
+        b.setChecked(grp not in self._closed)
+
+        def show(on):
+            b.setArrowType(Qt.DownArrow if on else Qt.RightArrow)
+            if not on or body.parent() is not None:      # ยังไม่มี parent: setHidden(False) จะเด้งเป็นหน้าต่าง
+                body.setHidden(not on)
+            (self._closed.discard if on else self._closed.add)(grp)
+        show(b.isChecked())
+        b.toggled.connect(show)
+        return b
 
     def _add_fields(self, form: QFormLayout, fields):
         item = self.item

@@ -24,6 +24,7 @@ from ..ladder.editor import (BLANK, INLINE, Branch, Coil, Inline, LadderDoc, Lea
 from ..ladder.model import CONTACT_OPS, KNOWN_FUNC, WIDE_WORDS, Ladder, digits, is_label, is_wide, kind_of, pair, resolve, word_name
 from ..ladder.static import static_findings
 from . import theme
+from .thai_keys import key_text, latin_only, to_latin
 
 CW, CH = 96.0, 66.0            # ขนาดช่อง
 LEFT, TOP = 64.0, 10.0         # ขอบซ้าย (เลข step) / บน
@@ -37,7 +38,7 @@ _PREFIX = re.compile(r"^(?:LD|AND|OR)?(D?(?:<>|>=|<=|=|>|<))\s+(\S+)\s+(\S+)$")
 # ======================= ข้อความที่พิมพ์ → คำสั่ง =======================
 def parse_entry(text: str, base: int) -> tuple[str, object]:
     """ข้อความในช่องแก้ไข → ("leaf"|"or"|"inline"|"coil", ชิ้น) — อ่านไม่ออก = LadderError."""
-    t = " ".join(text.upper().split())
+    t = " ".join(to_latin(text).upper().split())      # พิมพ์ด้วยแป้นไทย/วางข้อความไทย → ปุ่มตำแหน่งเดียวกัน
     if not t:
         raise LadderError(tr("ยังไม่ได้พิมพ์"))
     if not t.isascii():
@@ -585,6 +586,7 @@ class LadderCanvas(QWidget):
         w = max(190, int(box.width() * k))
         x = max(4, min(int(box.center().x() * k - w / 2), self.width() - w - 4))
         ed.setGeometry(x, int(box.center().y() * k - 17), w, 34)
+        latin_only(ed)
         ed.installEventFilter(self)
         self.editor, self._commit = ed, commit
         ed.show()
@@ -652,7 +654,8 @@ _FLIP = {"": "I", "I": "", "P": "PI", "PI": "P", "F": "FI", "FI": "F"}
 class LadderView(QWidget):
     send_requested = Signal()
     control = Signal(str)                     # run / stop / reset
-    learn_requested = Signal()                # ปุ่ม 🎓 บทเรียน ladder
+    learn_requested = Signal()
+    split_requested = Signal()                # ปุ่ม 🎓 บทเรียน ladder
     message = Signal(str)
 
     def __init__(self, xy_base: int = 8, parent=None):
@@ -709,14 +712,16 @@ class LadderView(QWidget):
         btn(B, "note", tr("คอมเมนต์"), tr("คอมเมนต์ของ rung (กด ;)"), lambda: self.edit_comment())
         btn(B, "text", tr("ข้อความ"), tr("แก้ rung นี้เป็นคำสั่งแบบข้อความ"), lambda: self.edit_text())
         B = bar2
-        btn(B, "send", tr("▶ F4 ส่งลง PLC"), tr("ตรวจ ladder แล้วส่งลง PLC ในตัว (ล้าง M/T/C/D แล้ว RUN)"),
+        btn(B, "send", tr("▶ รัน Ladder (F4)"), tr("ตรวจ ladder → เชื่อม PLC ในตัวให้เองถ้ายังไม่ได้เชื่อม → ส่งลง PLC แล้ว RUN (ล้าง M/T/C/D)"),
             lambda: self.send_requested.emit())
+        btn(B, "view", tr("◫ ผัง+Ladder"), tr("แบ่งจอ: ผังอยู่บน Ladder อยู่ล่าง — กดปุ่มบนผังแล้วดูวงจรทำงานไปพร้อมกัน"), self.split_requested.emit)
         btn(B, "run", "RUN", tr("ให้ PLC ในตัวทำงาน"), lambda: self.control.emit("run"))
         btn(B, "stop", "STOP", tr("หยุด PLC ในตัว (Y ดับหมด)"), lambda: self.control.emit("stop"))
         btn(B, "reset", "RESET", tr("ล้าง M/T/C/D และข้อผิดพลาด แล้วหยุด"), lambda: self.control.emit("reset"))
         self.buttons["send"].setObjectName("PrimaryTool")
         self.lbl_state = QLabel()
-        B.addWidget(self.lbl_state)
+        self.lbl_state.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)      # จอแคบ: ตัดข้อความ ไม่ดันหน้าต่าง
+        B.addWidget(self.lbl_state, 3)
         self.lbl_file = QLabel()
         self.lbl_file.setStyleSheet(f"color:{theme.TEXT_DIM};")
         self.lbl_file.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
@@ -809,16 +814,17 @@ class LadderView(QWidget):
     def _state(self):
         s = self.soft()
         if s is None:
-            text, col = tr("PLC ในตัวยังไม่ได้เชื่อมต่อ"), theme.TEXT_DIM
+            text, col = (tr("วาดเสร็จแล้วกด ▶ รัน Ladder (F4)") if not self.empty else tr("เริ่มวาด: กด F5 แล้วพิมพ์ X0")), theme.TEXT_DIM
         elif s.state == "error":
             text, col = "✖ " + s.fault, theme.DANGER
         elif self.unsent:
-            text, col = tr("● แก้แล้วยังไม่ส่ง — กด F4"), theme.WARN
+            text, col = tr("● แก้แล้วยังไม่รัน — กด ▶ รัน Ladder (F4)"), theme.WARN
         else:
-            text, col = {"run": ("● RUN", theme.SUCCESS), "stop": ("■ STOP", theme.WARN)}.get(
+            text, col = {"run": (tr("● RUN — กดปุ่มบนผังได้เลย"), theme.SUCCESS), "stop": (tr("■ STOP — กด RUN เพื่อทำงานต่อ"), theme.WARN)}.get(
                 s.state, (tr("ยังไม่มี ladder ใน PLC"), theme.TEXT_DIM))
         if text != self.lbl_state.text():
             self.lbl_state.setText(text)
+            self.lbl_state.setToolTip(text)
             self.lbl_state.setStyleSheet(f"color:{col}; font-weight:bold; padding:0 8px;")
         st = s.state if s else ""
         ed = not self.locked()
@@ -1470,7 +1476,7 @@ class LadderView(QWidget):
         if fn:
             fn()
             return True
-        t = e.text()
+        t = key_text(e)
         if t == ";":
             self.edit_comment()
             return True

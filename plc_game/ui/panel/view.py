@@ -5,17 +5,19 @@ from ...i18n import tr
 
 import time
 
-from PySide6.QtCore import QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QMimeData, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QKeySequence, QPainter, QPen, QShortcut, QUndoCommand, QUndoStack
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsView, QInputDialog, QMenu
+from PySide6.QtWidgets import QApplication, QGraphicsScene, QGraphicsView, QInputDialog, QMenu
 
 from ...panel.catalog import CATALOG, CATEGORIES, IN_KINDS
 from ...panel.model import DeviceSpec, PanelDoc, conflicts, validate_address
 from .. import theme
 from .items import ConveyorItem, DeviceItem, InputItem, SensorItem, WorkpieceItem, make_item
+from .inline_edit import InlineTools
 from .items_ext import PusherItem
 
 MIME = "application/x-plc-device"
+CLIP_MIME = "application/x-plc-devices"
 HOTKEYS = [str(i) for i in range(1, 10)] + [chr(c) for c in range(ord("A"), ord("Z") + 1)]
 
 
@@ -71,8 +73,9 @@ class SnapshotCommand(QUndoCommand):
         self.view._restore(self.before)
 
 
-class PanelView(QGraphicsView):
+class PanelView(InlineTools, QGraphicsView):
     changed = Signal()
+    props_requested = Signal()            # แถบลอย ⚙ → เปิดแผงคุณสมบัติ
     request_write = Signal(str, int)
     request_write_word = Signal(str, int)
     selection_changed = Signal(object)    # DeviceItem | None
@@ -97,6 +100,7 @@ class PanelView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.items_by_id: dict[str, DeviceItem] = {}
+        self._init_inline()
         self.doc_name = tr("ผังใหม่")
         self._pan = None
         self._auto_fit = True       # ปรับผังให้พอดีจอเมื่อขนาดเปลี่ยน จนกว่าผู้ใช้จะซูม/เลื่อนเอง
@@ -128,6 +132,7 @@ class PanelView(QGraphicsView):
         self.items_by_id.clear()
 
     def _build(self, doc: PanelDoc):
+        self.finish_text(False)
         self.clear_panel()
         self.doc_name = doc.name
         for spec in doc.devices:
@@ -157,6 +162,7 @@ class PanelView(QGraphicsView):
             self._last_json = now
 
     def flush_commit(self):
+        self.finish_text()
         if self._commit_timer.isActive():
             self.commit(self._pending_text)
 
@@ -279,17 +285,7 @@ class PanelView(QGraphicsView):
         if self.sc.run_mode:
             return
         sel = self.selected_items()
-        self.sc.clearSelection()
-        for it in sel:
-            spec = DeviceSpec(kind=it.spec.kind, x=it.spec.x + 40, y=it.spec.y + 40, props=dict(it.spec.props))
-            self._suggest_inputs(spec)
-            if it.info.io == "in":
-                spec.props["key"] = self._suggest_key()
-            self._add_item(make_item(spec)).setSelected(True)
-        if sel:
-            self.refresh_validation()
-            self.commit(tr("ทำซ้ำ {0} ชิ้น", len(sel)))
-            self.changed.emit()
+        self._paste_new([it.spec for it in sel], tr("ทำซ้ำ {0} ชิ้น", len(sel)))
 
     # ---------- จัดวาง (โหมดแก้ไข) ----------
     ALIGN_NAMES = {"left": tr("ชิดซ้าย"), "hcenter": tr("กึ่งกลางแนวตั้ง"), "right": tr("ชิดขวา"),
@@ -384,7 +380,55 @@ class PanelView(QGraphicsView):
             self.select_all()
             e.accept()
             return
+        if not self.sc.run_mode and not self.input_locked:
+            if e.key() == Qt.Key_F2 and self.edit_text():
+                e.accept()
+                return
+            vk = e.nativeVirtualKey() or int(e.key())      # แป้นไทย: ใช้รหัสปุ่มจริง
+            if e.modifiers() & Qt.ControlModifier and not e.modifiers() & (Qt.AltModifier | Qt.ShiftModifier):
+                fn = {ord("C"): self.copy_selected, ord("V"): self.paste_devices}.get(vk)
+                if fn and fn():
+                    e.accept()
+                    return
         super().keyPressEvent(e)
+
+    def copy_selected(self) -> int:
+        sel = self.selected_items()
+        if sel:
+            md = QMimeData()
+            md.setData(CLIP_MIME, PanelDoc(devices=[it.spec for it in sel]).to_json().encode())
+            QApplication.clipboard().setMimeData(md)
+            self.status.emit(tr("คัดลอก {0} ชิ้น", len(sel)))
+        return len(sel)
+
+    def paste_devices(self) -> int:
+        """วางอุปกรณ์ที่คัดลอก (input ได้ address ว่างถัดไป, การผูกระหว่างชิ้นที่คัดลอกมาด้วยกันยังอยู่)."""
+        md = QApplication.clipboard().mimeData()
+        if self.sc.run_mode or md is None or not md.hasFormat(CLIP_MIME):
+            return 0
+        try:
+            src = PanelDoc.from_json(bytes(md.data(CLIP_MIME)).decode()).devices
+        except (ValueError, TypeError, AttributeError, KeyError):
+            return 0
+        self._paste_new(src, tr("วาง {0} ชิ้น", len(src)))
+        return len(src)
+
+    def _paste_new(self, src: list, text: str):
+        new = [DeviceSpec(kind=d.kind, x=d.x + 40, y=d.y + 40, props=dict(d.props)) for d in src]
+        ids = {d.id: n.id for d, n in zip(src, new)}
+        self.sc.clearSelection()
+        for spec in new:
+            for k, v in spec.props.items():
+                if isinstance(v, str) and v in ids:
+                    spec.props[k] = ids[v]
+            self._suggest_inputs(spec)
+            if CATALOG[spec.kind].io == "in":
+                spec.props["key"] = self._suggest_key()
+            self._add_item(make_item(spec)).setSelected(True)
+        if new:
+            self.refresh_validation()
+            self.commit(text)
+            self.changed.emit()
 
     def item_props_changed(self, item: DeviceItem):
         self.refresh_validation()
@@ -584,6 +628,7 @@ class PanelView(QGraphicsView):
         dt = min(now - self._last_tick, 0.1)
         self._last_tick = now
         self.step(dt)
+        self.floatbar.refresh()
 
     def step(self, dt: float):
         """จำลองอุปกรณ์ไปข้างหน้า dt วินาที (เรียกเองได้ใน test ด้วยนาฬิกาจำลอง)."""
@@ -632,6 +677,7 @@ class PanelView(QGraphicsView):
             self.scale(f, f)
 
     def wheelEvent(self, e):
+        self.finish_text()
         self._auto_fit = False
         f = 1.15 if e.angleDelta().y() > 0 else 1 / 1.15
         s = self.transform().m11() * f
@@ -684,6 +730,11 @@ class PanelView(QGraphicsView):
         if self.input_locked and self.sc.run_mode:
             e.accept()
             return
+        if not self.sc.run_mode and e.button() == Qt.LeftButton:
+            item = self._item_at(e.position().toPoint())
+            if item is not None and self.edit_text(item):
+                e.accept()
+                return
         super().mouseDoubleClickEvent(e)
 
     # ================= เมนูคลิกขวา =================
@@ -718,7 +769,7 @@ class PanelView(QGraphicsView):
             m.addSeparator()
             if item.info.io != "none":
                 m.addAction(tr("แก้ Address…"), lambda: self._ask_address(item))
-            m.addAction(tr("แก้ชื่อ…"), lambda: self._ask_label(item))
+            m.addAction((tr("แก้ข้อความ") if item.spec.kind == "note" else tr("แก้ชื่อ")) + "\tF2", lambda: self.edit_text(item))
             if isinstance(item, InputItem):
                 m.addAction(tr("ตั้งคีย์ลัด…"), lambda: self._ask_key(item))
             if item.info.io != "none":
@@ -761,11 +812,6 @@ class PanelView(QGraphicsView):
                 self.status.emit(f"✖ {msg}")
             self._set_prop(item, "address", txt.strip().upper(), tr("แก้ Address"))
 
-    def _ask_label(self, item):
-        txt, ok = QInputDialog.getText(self, tr("แก้ชื่อ"), tr("ชื่อที่แสดงบนผัง"), text=item.label)
-        if ok:
-            self._set_prop(item, "label", txt, tr("แก้ชื่อ"))
-
     def _ask_key(self, item):
         txt, ok = QInputDialog.getText(self, tr("ตั้งคีย์ลัด"), tr("กดคีย์นี้ในโหมดใช้งาน = กดอุปกรณ์ (1–9, A–Z, เว้นว่าง = ไม่ใช้)"),
                                        text=item.key)
@@ -799,7 +845,9 @@ class PanelView(QGraphicsView):
             if kind in CATALOG:
                 if self.sc.run_mode:
                     self.status.emit(tr("สลับเป็นโหมดแก้ไข (EDIT) เพื่อจัดผัง"))
-                self.add_device(kind, self.mapToScene(e.position().toPoint()))
+                it = self.add_device(kind, self.mapToScene(e.position().toPoint()))
+                if kind == "note" and not self.sc.run_mode:      # วางป้ายแล้วพิมพ์ได้เลย
+                    QTimer.singleShot(0, it, lambda: self.edit_text(it))
             e.acceptProposedAction()
 
     def _on_selection(self):
