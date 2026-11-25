@@ -438,7 +438,7 @@ class LevelPanel(QWidget):
             self.btn_check.setText(tr("▶  ตรวจคำตอบ"))
             self.progress.setRange(0, max(1, level.checks))
             self.progress.setFormat(tr("ยังไม่ได้ตรวจ · {0} ข้อ", level.checks))
-            self.ai.setHtml(tr("<span style='color:{0}'>เขียน ladder ในแท็บ Ladder (F4 ส่งลง PLC ในตัว) หรือใน GX Works3 (Write ลง PLC) → กด ▶ ตรวจคำตอบ<br>ตัวตรวจจะกดปุ่มบนผังให้เอง ห้ามกดอุปกรณ์ระหว่างตรวจ</span>", theme.TEXT_DIM)
+            self.ai.setHtml(tr("<span style='color:{0}'>เขียน ladder ในแท็บ Ladder (กด ▶ รัน Ladder) หรือใน GX Works3 (Write ลง PLC) → กด ▶ ตรวจคำตอบ<br>ตัวตรวจจะกดปุ่มบนผังให้เอง ห้ามกดอุปกรณ์ระหว่างตรวจ</span>", theme.TEXT_DIM)
                             + ("" if self.ai_enabled else AI_LOCKED_HTML))
         self.restore_ladder()
         self._sync_buttons()
@@ -685,4 +685,3 @@ class LevelPanel(QWidget):
         fs = analyze_live(history, self._devices())
         self.ai.setHtml(tr("<p><i>วิเคราะห์จากสัญญาณที่กดเล่นล่าสุด</i></p>") + findings_html(fs))
         return fs
-

@@ -486,3 +486,27 @@ def _draw(win, app):
         QTest.keyClicks(cv.editor, text)
         QTest.keyClick(cv.editor, Qt.Key_Return)
         app.processEvents()
+
+
+def test_gc_runs_only_in_gui_thread(win):
+    """gc ใน thread ของ AI เคยลบวัตถุ Qt ผิด thread จนโปรแกรมปิดตัวเอง."""
+    import gc
+    assert not gc.isenabled()
+    win._gc.check()
+    win.shutdown()
+    assert gc.isenabled()
+
+
+def test_standard_panel_is_not_overwritten(win, monkeypatch):
+    from PySide6.QtWidgets import QFileDialog
+    win.open_level(0)
+    p = win.panel_path
+    old = p.read_bytes()
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *a, **k: ("", ""))
+    assert not win.save_panel() and p.read_bytes() == old
+
+
+def test_check_without_open_level_is_safe(win, monkeypatch):
+    monkeypatch.setattr(win, "open_level", lambda i: None)
+    win.levelp.level = None
+    win.start_check()

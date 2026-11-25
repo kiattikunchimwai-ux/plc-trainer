@@ -206,7 +206,10 @@ class StepTable(QWidget):
         if r < 0 or r >= self.table.rowCount():
             self.lbl_help.setText(tr("เลือกแถวเพื่อดูวิธีเขียนพารามิเตอร์"))
             return
-        op = self.table.cellWidget(r, 0).currentText()
+        cb = self.table.cellWidget(r, 0)
+        if cb is None:                       # แถวกำลังถูกสร้าง ยังไม่มีช่องคำสั่ง
+            return
+        op = cb.currentText()
         th, ex = E.OP_HELP.get(op, ("", ""))
         self.lbl_help.setText(tr("<b>{0}</b> — {1} · ตัวอย่าง: <code>{2}</code>  ·  ตัวเปรียบเทียบ = != >= <= > < · หลายเงื่อนไขใช้ and", op, th, ex))
 
@@ -752,7 +755,7 @@ class LevelEditorDialog(QDialog):
                 self.memory.clear()
                 self.run_ai()
             return
-        if not n.isdigit() or int(n) >= len(self._ai_tips) or self.locked():
+        if self.cur is None or not n.isdigit() or int(n) >= len(self._ai_tips) or self.locked():
             return
         s = self._ai_tips.pop(int(n))
         self.memory.tip(s.key, act == "add")

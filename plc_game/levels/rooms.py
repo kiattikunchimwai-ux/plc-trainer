@@ -129,6 +129,7 @@ def load_levels(room: Room, xy_base: int = 8) -> tuple[list[Level], list[str]]:
 
 def new_id(room: Room, base: str = "") -> str:
     have = {p.stem for p in room.path.glob("*.yaml")}
+    have |= {re.sub(r"_\d{8}_\d{6}$", "", p.stem) for p in (room.path / "_trash").glob("*.yaml")}      # ลบแล้ว: คะแนน/ladder เก่ายังผูกกับรหัสนี้
     base = re.sub(r"[^0-9A-Za-z_\-]", "", base) or f"{len(have) + 1:02d}_new"
     lid, n = base, 2
     while lid in have:

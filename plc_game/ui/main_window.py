@@ -167,6 +167,8 @@ class MainWindow(QMainWindow):
     def __init__(self, cfg: dict):
         i18n.apply_qt_locale()                  # ก่อน super().__init__ — ลูกทุกตัวรับ locale จากหน้าต่าง (กันตัวเลขไทย ๕๕๑๑)
         super().__init__()
+        from .gui_gc import GuiGC
+        self._gc = GuiGC(self)                  # ก่อนเริ่ม thread ใด ๆ — กัน gc ลบวัตถุ Qt ผิด thread
         self._keyfilter = _KeyFilter(self)      # ต้องสร้างก่อนลูกตัวอื่น (ดูคำอธิบายในคลาส)
         self.cfg = cfg
         self.xy_base = int(cfg.get("xy_base", 8))
@@ -586,7 +588,7 @@ class MainWindow(QMainWindow):
         self.cb_level.setMinimumWidth(300)
         b_open = tool_button(tr("📖  เปิดด่าน"))
         b_open.setToolTip(tr("โหลดผังของด่านและแสดงโจทย์"))
-        b_open.clicked.connect(lambda: self.open_level(self.cb_level.currentIndex()))
+        b_open.clicked.connect(self._open_chosen_level)
         self.b_level_open = b_open
         b_reload = tool_button(tr("🔄  โหลดรายการใหม่"))
         b_reload.setToolTip(tr("อ่านไฟล์ levels/*.yaml ใหม่ (ครูแก้/เพิ่มด่านเองได้)"))
@@ -896,6 +898,12 @@ class MainWindow(QMainWindow):
         if lid in ids:
             self.open_level(ids.index(lid))
 
+    def _open_chosen_level(self):
+        if self.cb_level.currentIndex() < 0:
+            self.log(tr("ห้องนี้ยังไม่มีด่าน — กด ➕ สร้างด่านของฉัน"))
+            return
+        self.open_level(self.cb_level.currentIndex())
+
     def open_level(self, index: int):
         levels = self.levelp.levels
         if not 0 <= index < len(levels):
@@ -930,8 +938,10 @@ class MainWindow(QMainWindow):
             if self.levelp.levels:
                 self.open_level(max(0, self.cb_level.currentIndex()))
             else:
-                self.log(tr("✖ ไม่พบไฟล์ด่านในโฟลเดอร์ levels/"))
+                self.log(tr("ห้องนี้ยังไม่มีด่าน — กด ➕ สร้างด่านของฉัน") if self.levelp.room else tr("✖ ไม่พบไฟล์ด่านในโฟลเดอร์ levels/"))
                 return
+        if self.levelp.level is None:             # ไม่ยอมทิ้งผังที่แก้อยู่ = ยังไม่ได้เปิดด่าน
+            return
         hunt = self.levelp.level.is_fault_hunt
         if not self.online and not hunt:
             self.log(tr("✖ ต้องเชื่อมต่อ PLC ก่อนตรวจ (กด ⏻ เชื่อมต่อ ที่แท็บหน้าแรก)"))
@@ -940,7 +950,7 @@ class MainWindow(QMainWindow):
             return
         if self.soft is not None and not hunt:
             if self.ladderv.unsent:               # ตรวจ ladder เก่าแทนของที่เห็นบนจอ = ผลลวง
-                self.log(tr("✖ แก้ ladder แล้วยังไม่ได้ส่งลง PLC — กด F4 ในแท็บ Ladder ก่อนตรวจ"))
+                self.log(tr("✖ แก้ ladder แล้วยังไม่ได้รัน — กด ▶ รัน Ladder (F4) ก่อนตรวจ"))
                 self.show_ladder()
                 return
             if self.soft.state != "run":          # ก่อนหักสิทธิ์ตรวจของโหมดสอบ
@@ -2034,7 +2044,11 @@ class MainWindow(QMainWindow):
             self._load_panel(Path(fn))
 
     def save_panel(self, as_new=False) -> bool:
+        from ..levels.editor import is_standard
         path = self.panel_path
+        if path is not None and not as_new and is_standard(path, self.levelp.root):
+            self.log(tr("🔒 ผังของด่านมาตรฐานบันทึกทับไม่ได้ — บันทึกเป็นไฟล์ใหม่แทน"))
+            as_new = True
         if as_new or path is None:
             PANEL_DIR.mkdir(exist_ok=True)
             fn, _ = QFileDialog.getSaveFileName(self, tr("บันทึกผังอุปกรณ์"), str(PANEL_DIR / tr("ผังใหม่.plcpanel")),
@@ -2621,3 +2635,4 @@ class MainWindow(QMainWindow):
         self._keyfilter.active = False
         QApplication.instance().removeEventFilter(self._keyfilter)
         self.chart.shutdown()
+        self._gc.stop()

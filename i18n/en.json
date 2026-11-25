@@ -1253,7 +1253,6 @@
  "<p>ไม่พบจุดที่น่าสงสัยใน ladder</p>": "<p>Nothing suspicious found in the ladder</p>",
  "<span style='color:{0}'>กำลังตรวจ…</span>": "<span style='color:{0}'>Checking…</span>",
  "<span style='color:{0}'>มีอุปกรณ์เสีย 1 จุด (ซ่อนอยู่)<br>กดปุ่ม Start / Stop สังเกตว่าอะไรไม่เป็นไปตามที่ควร แล้วคลิกขวาอุปกรณ์นั้น</span>": "<span style='color:{0}'>One device is faulty (hidden)<br>Press Start / Stop, notice what doesn't behave as it should, then right-click that device</span>",
- "<span style='color:{0}'>เขียน ladder ในแท็บ Ladder (F4 ส่งลง PLC ในตัว) หรือใน GX Works3 (Write ลง PLC) → กด ▶ ตรวจคำตอบ<br>ตัวตรวจจะกดปุ่มบนผังให้เอง ห้ามกดอุปกรณ์ระหว่างตรวจ</span>": "<span style='color:{0}'>Write the ladder in the Ladder tab (F4 sends it to the built-in PLC) or in GX Works3 (Write to PLC) → press ▶ Check<br>The checker presses the buttons itself; do not touch devices while checking</span>",
  "<span style='color:{0}'>โหลดโปรแกรมที่ทำงานถูกแล้วลง PLC → เชื่อมต่อ → กด ▶ เริ่มหาจุดเสีย<br>กดปุ่มบนผัง ดูมอเตอร์ ไฟ และตาราง I/O แล้ว<b>คลิกขวาอุปกรณ์ที่คิดว่าเสีย</b> → เลือกอาการ</span>": "<span style='color:{0}'>Load a working program into the PLC → connect → press ▶ Start fault hunt<br>Press panel buttons, watch the motor, lamps and I/O table, then <b>right-click the device you suspect</b> → choose the symptom</span>",
  "{0} · บันทึก {1}": "{0} · saved {1}",
  "กำลังตรวจ: {0}  (%v/%m)": "Checking: {0}  (%v/%m)",
@@ -1624,7 +1623,6 @@
  "✖ รหัสครูไม่ถูกต้อง": "✖ Wrong teacher password",
  "✖ เปิดผังไม่ได้: {0}": "✖ Could not open panel: {0}",
  "✖ เปิดไฟล์การกดไม่ได้: {0}": "✖ Could not open recording: {0}",
- "✖ แก้ ladder แล้วยังไม่ได้ส่งลง PLC — กด F4 ในแท็บ Ladder ก่อนตรวจ": "✖ The ladder was edited but not sent — press F4 in the Ladder tab before checking",
  "✖ ไม่พบไฟล์ด่านในโฟลเดอร์ levels/": "✖ No level files found in levels/",
  "✖ ไม่รู้จักคำสั่ง '{0}' — พิมพ์ HELP": "✖ Unknown command '{0}' — type HELP",
  "⤒  ชิดบน": "⤒  Align top",
@@ -2410,5 +2408,9 @@
  "ตอนนี้เชื่อม {0} อยู่ ซึ่งไม่ได้รัน ladder ที่วาดในโปรแกรม\nสลับไป PLC ในตัวแล้วรันเลยไหม?": "{0} is connected and does not run the ladder drawn here.\nSwitch to the built-in PLC and run it?",
  "✔ Ladder ทำงานแล้ว ({0} คำสั่ง) — ไปที่ผังแล้วกดปุ่มเพื่อลอง หรือกด ▶ ตรวจคำตอบ": "✔ Ladder running ({0} instructions) — press buttons on the panel to try it, or click ▶ Check answer",
  "วาด ladder ในแท็บ Ladder แล้วกด ▶ รัน Ladder (F4)": "Draw in the Ladder tab, then click ▶ Run ladder (F4)",
- "ยังไม่ได้วาด ladder — กด F5 แล้วพิมพ์ X0 (หรือกด 🎓 บทเรียน)": "No ladder yet — press F5 and type X0 (or click 🎓 Lesson)"
+ "ยังไม่ได้วาด ladder — กด F5 แล้วพิมพ์ X0 (หรือกด 🎓 บทเรียน)": "No ladder yet — press F5 and type X0 (or click 🎓 Lesson)",
+ "ห้องนี้ยังไม่มีด่าน — กด ➕ สร้างด่านของฉัน": "This room has no levels yet — click ➕ Create my level",
+ "🔒 ผังของด่านมาตรฐานบันทึกทับไม่ได้ — บันทึกเป็นไฟล์ใหม่แทน": "🔒 A standard level's panel cannot be overwritten — saving as a new file instead",
+ "<span style='color:{0}'>เขียน ladder ในแท็บ Ladder (กด ▶ รัน Ladder) หรือใน GX Works3 (Write ลง PLC) → กด ▶ ตรวจคำตอบ<br>ตัวตรวจจะกดปุ่มบนผังให้เอง ห้ามกดอุปกรณ์ระหว่างตรวจ</span>": "<span style='color:{0}'>Write the ladder in the Ladder tab (click ▶ Run ladder) or in GX Works3 (Write to PLC) → press ▶ Check<br>The checker presses the buttons itself; do not touch devices while checking</span>",
+ "✖ แก้ ladder แล้วยังไม่ได้รัน — กด ▶ รัน Ladder (F4) ก่อนตรวจ": "✖ The ladder was edited but not run — click ▶ Run ladder (F4) before checking"
 }

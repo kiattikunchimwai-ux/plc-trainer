@@ -9,7 +9,7 @@
 - First bullet is the short note shown in the About dialog
 -->
 
-## Unreleased
+## 1.1.0 — 2026-11-25
 ### th
 - สร้างห้องด่านของตัวเองได้หลายห้อง แยกจากด่านมาตรฐาน (แก้ไม่ได้ แต่ทำสำเนาไปแก้ได้) คะแนนไม่ปนกัน ส่งต่อเป็นไฟล์ .plcroom
 - ปุ่ม ➕ สร้างด่านของฉัน: เลือกผัง → แม่แบบ → ตั้งชื่อ แล้วเล่นได้เลย
@@ -21,6 +21,7 @@
 - เอาปุ่ม "ให้ Claude อธิบาย" ออก ใช้เฉพาะ AI ในโปรแกรม ทุกคนใช้ได้เหมือนกัน ไม่ต้องมีบัญชีหรืออินเทอร์เน็ต
 - ปุ่มเดียว ▶ รัน Ladder (F4): เชื่อม PLC ในตัวให้เอง ส่ง แล้ว RUN พร้อมข้อความบอกว่าต้องกดอะไรต่อ และปุ่ม ◫ ผัง+Ladder
 - แก้: ตัวแก้ไขด่านทำข้อความภาษาอังกฤษของข้อตรวจหายเมื่อบันทึก, กด Enter ในช่องพิมพ์ไปกดปุ่มอื่น, กด Esc แล้วงานที่พิมพ์หายโดยไม่ถาม
+- แก้: โปรแกรมปิดตัวเองเมื่อ AI ทำงานพร้อมเปลี่ยนด่านในตัวแก้ไข, กดตรวจในห้องว่าง, ผังด่านมาตรฐานถูกบันทึกทับได้, ด่านใหม่ได้คะแนนของด่านที่ลบไปแล้ว
 ### en
 - Create several level rooms of your own, separate from the standard levels (read-only, but copyable); scores stay separate and rooms can be shared as .plcroom files
 - ➕ Create my level: choose a panel → a template → a title, then play
@@ -32,6 +33,7 @@
 - Removed the "Ask Claude" button; only the built-in AI is used, so everyone has the same features with no account or internet
 - One button ▶ Run ladder (F4): connects the built-in PLC, sends and runs, tells you what to press next, plus a ◫ Panel+ladder button
 - Fixed: the level editor lost English check texts on save, Enter in a field pressed another button, Esc discarded typed work without asking
+- Fixed: the app could close by itself when the AI ran while switching levels in the editor, checking in an empty room, standard level panels could be overwritten, a new level could inherit the score of a deleted one
 
 ## 1.0.1 — 2026-11-24
 ### th
