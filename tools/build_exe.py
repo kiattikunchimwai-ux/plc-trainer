@@ -40,6 +40,7 @@ def data_files() -> list[tuple[Path, str]]:
     examples = {p.name for p in i18n_extract.example_panels() if p.parent.name == "panels"} | {"default.plcpanel"}
     out += [(ROOT / "panels" / n, "panels") for n in sorted(examples) if (ROOT / "panels" / n).exists()]
     out += [(f, "assets") for f in (ROOT / "assets").glob("icon.*")]
+    out += [(f, "assets") for f in (ROOT / "assets").glob("arrow_*.png")]
     out += [(f, "i18n") for f in (ROOT / "i18n").glob("*.json")]
     out += [(ROOT / "plc_game" / n, "plc_game") for n in ("config.yaml", "support.json", "shipped_hashes.json")]
     out += [(f, "docs") for f in (ROOT / "docs").glob("คู่มือ*.pdf")]

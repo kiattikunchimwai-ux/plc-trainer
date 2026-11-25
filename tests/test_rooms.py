@@ -510,3 +510,44 @@ def test_check_without_open_level_is_safe(win, monkeypatch):
     monkeypatch.setattr(win, "open_level", lambda i: None)
     win.levelp.level = None
     win.start_check()
+
+
+def test_condition_cards_are_easy_to_click(win, app):
+    """คลิกกลางช่องอุปกรณ์ = รายการเปิด, ย้าย/ลบแล้วตำแหน่งเลื่อนไม่เด้งกลับบนสุด."""
+    from plc_game.ui.cond_builder import AddrBox, CondBuilder
+    b = CondBuilder()
+    b.resize(700, 220)
+    b.show()
+    for _ in range(8):
+        b.add("press")
+    app.processEvents()
+    app.processEvents()
+    bar = b.scroll.verticalScrollBar()
+    assert bar.value() == bar.maximum() > 0
+    pos = bar.value() // 2
+    bar.setValue(pos)
+    b.move_to(3, 1)
+    app.processEvents()
+    app.processEvents()
+    assert abs(bar.value() - pos) <= 2
+    ab = b.cards[0].findChild(AddrBox)
+    b.scroll.verticalScrollBar().setValue(0)
+    QTest.mouseClick(ab.lineEdit(), Qt.LeftButton)
+    app.processEvents()
+    assert ab.view().isVisible()
+    ab.hidePopup()
+    i = next(i for i in range(ab.count()) if ab.itemData(i) is None)
+    ab._chosen(i)
+    ab.lineEdit().setText("X7")
+    ab.lineEdit().editingFinished.emit()
+    assert b.actions[0].addr == "X7"
+    b.close()
+
+
+def test_standard_level_shows_what_to_press(win, app):
+    d = win.open_level_editor()
+    d.set_room("")
+    d.lst.setCurrentRow(0)
+    app.processEvents()
+    assert d.locked() and d.lock_bar.isVisible() and d.b_lock_new.isEnabled() and d.b_lock_copy.isEnabled()
+    d.close()

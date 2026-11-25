@@ -140,6 +140,11 @@ tmp = Path({tmp!r})
 classroom.STUDENT_FILE = tmp / "students.json"; scores.SCORE_FILE = tmp / "scores.json"
 state.PANEL_DIR = tmp; state.STATE_FILE = tmp / "ui_state.json"; state._OLD_LAST = tmp / "last.txt"
 from plc_game.ai import learn; learn.MEMORY_FILE = tmp / "m.json"; sidebar.ANIMATE = False
+import shutil
+from plc_game.levels.engine import LEVEL_DIR
+from plc_game.ui.level_dock import LevelPanel
+shutil.copytree(LEVEL_DIR, tmp / "lv", ignore=shutil.ignore_patterns("rooms", "_trash"))     # ไม่อ่านห้องจริงของผู้ใช้
+LevelPanel.folder = tmp / "lv"
 from plc_game.ui.main_window import MainWindow
 w = MainWindow({{"backend": "mock", "xy_base": 8}})
 res = {{"lang": i18n.lang(), "bad": T._thai_texts(w),

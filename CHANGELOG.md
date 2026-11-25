@@ -22,6 +22,9 @@
 - ปุ่มเดียว ▶ รัน Ladder (F4): เชื่อม PLC ในตัวให้เอง ส่ง แล้ว RUN พร้อมข้อความบอกว่าต้องกดอะไรต่อ และปุ่ม ◫ ผัง+Ladder
 - แก้: ตัวแก้ไขด่านทำข้อความภาษาอังกฤษของข้อตรวจหายเมื่อบันทึก, กด Enter ในช่องพิมพ์ไปกดปุ่มอื่น, กด Esc แล้วงานที่พิมพ์หายโดยไม่ถาม
 - แก้: โปรแกรมปิดตัวเองเมื่อ AI ทำงานพร้อมเปลี่ยนด่านในตัวแก้ไข, กดตรวจในห้องว่าง, ผังด่านมาตรฐานถูกบันทึกทับได้, ด่านใหม่ได้คะแนนของด่านที่ลบไปแล้ว
+- สร้างด่านกดง่ายขึ้น: ช่องตัวเลือกมีลูกศร คลิกที่ไหนในช่องก็เปิดรายการ พื้นที่เงื่อนไขใหญ่ขึ้นและลากปรับได้ ตั้งชื่อด่านให้อัตโนมัติ
+- ด่านมาตรฐานมีแถบบอกว่าแก้ไม่ได้ พร้อมปุ่มสร้างด่าน/ทำสำเนา
+- แก้: ย้ายหรือลบเงื่อนไขแล้วรายการเด้งกลับบนสุด
 ### en
 - Create several level rooms of your own, separate from the standard levels (read-only, but copyable); scores stay separate and rooms can be shared as .plcroom files
 - ➕ Create my level: choose a panel → a template → a title, then play
@@ -34,6 +37,9 @@
 - One button ▶ Run ladder (F4): connects the built-in PLC, sends and runs, tells you what to press next, plus a ◫ Panel+ladder button
 - Fixed: the level editor lost English check texts on save, Enter in a field pressed another button, Esc discarded typed work without asking
 - Fixed: the app could close by itself when the AI ran while switching levels in the editor, checking in an empty room, standard level panels could be overwritten, a new level could inherit the score of a deleted one
+- Easier level creation: drop-downs show an arrow and open when clicked anywhere, a larger resizable condition area, and a default level name
+- Standard levels show a read-only notice with create/copy buttons
+- Fixed: the condition list jumped to the top after moving or deleting a condition
 
 ## 1.0.1 — 2026-11-24
 ### th

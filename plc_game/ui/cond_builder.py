@@ -1,7 +1,7 @@
 """ตัวสร้างเงื่อนไขแบบประโยค: เลือกจากรายการแทนการพิมพ์คำสั่ง (แปลงไป-กลับกับ StepRow เดิม)."""
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QEvent, QSignalBlocker, Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QComboBox, QDoubleSpinBox, QFrame, QHBoxLayout, QLabel, QLineEdit, QMenu, QPushButton, QScrollArea, QSpinBox,
     QToolButton, QVBoxLayout, QWidget,
@@ -48,10 +48,12 @@ class AddrBox(_Combo):
     def __init__(self, addr: str, items: list[tuple[str, str]], xy_base: int):
         super().__init__()
         self.xy_base = xy_base
+        self._typing = False
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.NoInsert)
         self.setMinimumWidth(150)
         latin_only(self.lineEdit())
+        self.lineEdit().installEventFilter(self)
         for a, text in items:
             self.addItem(text, a)
         i = self.findData(addr)
@@ -59,14 +61,36 @@ class AddrBox(_Combo):
             self.addItem(addr, addr)
             i = self.count() - 1
         self.setCurrentIndex(i)
-        self.activated.connect(lambda i: self._emit(self.itemData(i)))
+        self.addItem(tr("⌨ พิมพ์ address เอง…"), None)
+        self.activated.connect(self._chosen)
         self.lineEdit().editingFinished.connect(self._typed)
         self._addr = addr
+
+    def eventFilter(self, o, e):
+        """คลิกที่ไหนในช่องก็เปิดรายการ (เดิมต้องคลิกลูกศรให้โดน)."""
+        if o is self.lineEdit():
+            if e.type() == QEvent.MouseButtonRelease and e.button() == Qt.LeftButton and self.isEnabled() \
+                    and not self._typing and not self.lineEdit().hasSelectedText():
+                self.showPopup()
+                return True
+            if e.type() == QEvent.FocusOut:
+                self._typing = False
+        return super().eventFilter(o, e)
+
+    def _chosen(self, i: int):
+        if self.itemData(i) is None:                     # พิมพ์เอง: คืนชื่อเดิมแล้วเลือกข้อความไว้ให้พิมพ์ทับ
+            with QSignalBlocker(self):
+                self.setCurrentIndex(self.findData(self._addr))
+            self.setFocus()
+            self._typing = True
+            self.lineEdit().selectAll()
+            return
+        self._emit(self.itemData(i))
 
     def _typed(self):
         t = self.currentText().strip()
         i = self.findText(t)
-        if i >= 0:
+        if i >= 0 and self.itemData(i):
             return self._emit(self.itemData(i))
         try:
             self._emit(parse_device(t.upper(), self.xy_base).name)
@@ -132,8 +156,13 @@ class CondBuilder(QWidget):
     def add(self, kind: str):
         self.actions.append(C.default_action(kind, self.inputs, self.outputs))
         self._rebuild()
-        self.scroll.verticalScrollBar().setValue(self.scroll.verticalScrollBar().maximum())
+        QTimer.singleShot(0, self._show_last)
         self.changed.emit()
+
+    def _show_last(self):
+        if self.cards:
+            bar = self.scroll.verticalScrollBar()
+            bar.setValue(bar.maximum())
 
     def remove(self, i: int):
         del self.actions[i]
@@ -187,7 +216,17 @@ class CondBuilder(QWidget):
             self.cards.append(card)
             lay.addWidget(card)
         lay.addStretch(1)
+        bar = self.scroll.verticalScrollBar()
+        pos = bar.value()
+        old = self.scroll.takeWidget()                   # setWidget ลบของเดิมทันที — ปุ่มที่กำลังถูกคลิกอยู่ในนั้น
+        if old is not None:
+            old.hide()
+            old.setParent(self)
+            old.deleteLater()
         self.scroll.setWidget(body)
+        lay.activate()
+        bar.setValue(pos)
+        QTimer.singleShot(0, self, lambda: bar.setValue(pos) if self.scroll.widget() is body else None)
 
     def _card(self, i: int, a: C.Action) -> QFrame:
         f = QFrame()
@@ -215,6 +254,9 @@ class CondBuilder(QWidget):
             b = QToolButton()
             b.setText(text)
             b.setToolTip(tip)
+            b.setFixedSize(36, 32)
+            b.setStyleSheet("padding:0;")
+            b.setEnabled(not (text == "▲" and i == 0) and not (text == "▼" and i == len(self.actions) - 1))
             b.clicked.connect(lambda _=False, fn=fn: fn())
             top.addWidget(b, 0, Qt.AlignTop)
         v.addLayout(top)

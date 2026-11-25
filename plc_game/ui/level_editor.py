@@ -14,7 +14,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (
-    QAbstractItemView, QComboBox, QDialog, QDoubleSpinBox, QFileDialog, QFormLayout, QHBoxLayout, QHeaderView, QInputDialog,
+    QAbstractItemView, QComboBox, QDialog, QDoubleSpinBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout, QHeaderView, QInputDialog,
     QLabel, QLineEdit, QListWidget, QListWidgetItem, QMenu, QMessageBox, QPlainTextEdit, QPushButton, QSpinBox, QSplitter,
     QStackedWidget, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QToolButton, QVBoxLayout, QWidget,
 )
@@ -225,7 +225,9 @@ class LevelEditorDialog(QDialog):
                  room: str = "", lock_standard: bool = False):
         super().__init__(parent)
         self.setWindowTitle(tr("✏ ตัวแก้ไขด่าน (ครู)"))
-        self.resize(1280, 800)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        scr = (parent or self).screen().availableGeometry()
+        self.resize(min(1500, int(scr.width() * .94)), min(1000, int(scr.height() * .92)))
         self.xy_base = xy_base
         self.root = Path(folder)                 # levels/ (ด่านมาตรฐาน)
         self.room = rooms.get(room, self.root) if room else None
@@ -278,6 +280,7 @@ class LevelEditorDialog(QDialog):
         lv.addWidget(self.lst, 1)
         g = QHBoxLayout()
         self.b_new = _btn(tr("➕ สร้างด่าน"), tr("สร้างด่านใหม่ในห้องของคุณ ทีละขั้น"))
+        self.b_new.setObjectName("Primary")
         self.b_new_hunt = _btn(tr("🔍 หาจุดเสียใหม่"))
         self.b_dup = _btn(tr("⧉ ทำสำเนา"))
         self.b_del = _btn(tr("🗑 ลบ"), tr("ย้ายไป levels/_trash (กู้คืนได้)"))
@@ -301,6 +304,20 @@ class LevelEditorDialog(QDialog):
         right = QWidget()
         rv = QVBoxLayout(right)
         rv.setContentsMargins(6, 0, 0, 0)
+        self.lock_bar = QFrame()                        # ด่านมาตรฐาน: บอกให้ชัดว่าต้องกดอะไร
+        self.lock_bar.setObjectName("LockBar")
+        self.lock_bar.setStyleSheet(f"QFrame#LockBar {{ border:1px solid {theme.WARN}; border-radius:8px; }}")
+        lb = QHBoxLayout(self.lock_bar)
+        lt = QLabel(tr("🔒 ด่านมาตรฐานแก้ไม่ได้ ช่องด้านล่างจึงกดไม่ได้ — สร้างด่านใหม่ หรือทำสำเนาไปแก้"))
+        lt.setWordWrap(True)
+        lb.addWidget(lt, 1)
+        self.b_lock_new, self.b_lock_copy = _btn(tr("➕ สร้างด่าน")), _btn(tr("📋 ทำสำเนาไปห้องของฉัน"))
+        self.b_lock_new.setObjectName("Primary")
+        self.b_lock_new.clicked.connect(lambda: self.create_level())
+        self.b_lock_copy.clicked.connect(lambda: self.copy_to_room())
+        lb.addWidget(self.b_lock_new)
+        lb.addWidget(self.b_lock_copy)
+        rv.addWidget(self.lock_bar)
         form = QFormLayout()
         self.ed_id = latin_only(QLineEdit())
         self.ed_id.setToolTip(tr("ชื่อไฟล์ levels/<รหัส>.yaml · เปลี่ยนรหัสแล้วคะแนนเก่าจะไม่ผูกกับด่านนี้"))
@@ -325,7 +342,7 @@ class LevelEditorDialog(QDialog):
         prow.addWidget(self.b_auto)
         form.addRow(tr("ผังอุปกรณ์"), prow)
         self.ed_desc = QPlainTextEdit()
-        self.ed_desc.setFixedHeight(70)
+        self.ed_desc.setFixedHeight(58)
         self.ed_desc.setPlaceholderText(tr("โจทย์ที่นักเรียนเห็น (หลายบรรทัดได้)"))
         form.addRow(tr("โจทย์"), self.ed_desc)
         self.lbl_io = QLabel()
@@ -428,12 +445,18 @@ class LevelEditorDialog(QDialog):
         self.lbl_faults.setStyleSheet(f"color:{theme.TEXT_DIM};")
         tfv.addWidget(self.lbl_faults)
         self.tabs.addTab(tf, tr("หาจุดเสีย"))
-        rv.addWidget(self.tabs, 1)
+        vs = QSplitter(Qt.Vertical)                     # ลากเส้นแบ่งให้เงื่อนไขหรือ AI สูงขึ้นได้
+        vs.setChildrenCollapsible(False)
+        vs.setHandleWidth(8)
+        vs.addWidget(self.tabs)
         self.ai_box = QTextBrowser()
         self.ai_box.setOpenLinks(False)
-        self.ai_box.setFixedHeight(150)
+        self.ai_box.setMinimumHeight(60)
         self.ai_box.anchorClicked.connect(lambda u: self._ai_link(u.toString()))
-        rv.addWidget(self.ai_box)
+        vs.addWidget(self.ai_box)
+        vs.setStretchFactor(0, 1)
+        vs.setSizes([600, 100])
+        rv.addWidget(vs, 1)
         self._ai_timer = QTimer(self, singleShot=True, interval=600)
         self._ai_timer.timeout.connect(self.run_ai)
 
@@ -837,6 +860,7 @@ class LevelEditorDialog(QDialog):
                   self.b_case_add, self.b_case_del, self.b_case_up, self.b_case_down, self.tbl_pool, self.sp_guess,
                   self.b_pool_add, self.b_pool_all, self.b_pool_del):
             w.setEnabled(on and not lock)
+        self.lock_bar.setVisible(lock)
         self.b_use_panel.setVisible(self.room is not None)
         self.b_copy.setVisible(self.room is None)
         self.b_copy.setEnabled(on and d.path is not None)

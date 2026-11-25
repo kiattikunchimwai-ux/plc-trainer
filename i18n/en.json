@@ -2412,5 +2412,7 @@
  "ห้องนี้ยังไม่มีด่าน — กด ➕ สร้างด่านของฉัน": "This room has no levels yet — click ➕ Create my level",
  "🔒 ผังของด่านมาตรฐานบันทึกทับไม่ได้ — บันทึกเป็นไฟล์ใหม่แทน": "🔒 A standard level's panel cannot be overwritten — saving as a new file instead",
  "<span style='color:{0}'>เขียน ladder ในแท็บ Ladder (กด ▶ รัน Ladder) หรือใน GX Works3 (Write ลง PLC) → กด ▶ ตรวจคำตอบ<br>ตัวตรวจจะกดปุ่มบนผังให้เอง ห้ามกดอุปกรณ์ระหว่างตรวจ</span>": "<span style='color:{0}'>Write the ladder in the Ladder tab (click ▶ Run ladder) or in GX Works3 (Write to PLC) → press ▶ Check<br>The checker presses the buttons itself; do not touch devices while checking</span>",
- "✖ แก้ ladder แล้วยังไม่ได้รัน — กด ▶ รัน Ladder (F4) ก่อนตรวจ": "✖ The ladder was edited but not run — click ▶ Run ladder (F4) before checking"
+ "✖ แก้ ladder แล้วยังไม่ได้รัน — กด ▶ รัน Ladder (F4) ก่อนตรวจ": "✖ The ladder was edited but not run — click ▶ Run ladder (F4) before checking",
+ "⌨ พิมพ์ address เอง…": "⌨ Type an address…",
+ "🔒 ด่านมาตรฐานแก้ไม่ได้ ช่องด้านล่างจึงกดไม่ได้ — สร้างด่านใหม่ หรือทำสำเนาไปแก้": "🔒 Standard levels are read-only, so the fields below are disabled — create a new level or copy this one"
 }

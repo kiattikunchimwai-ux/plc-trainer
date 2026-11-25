@@ -1,6 +1,7 @@
 """ธีม "เกมฝึก" ทันสมัย: พื้นน้ำเงินเข้ม, การ์ดมุมมน, accent ไล่สี cyan→blue, สีสถานะสด.
 ชื่อตัวแปรคงเดิม (BG_PANEL, ACCENT, ...) เพื่อให้โค้ดเก่าใช้ต่อได้."""
 # i18n: skip-file  (ไทยในไฟล์นี้เป็นแค่คอมเมนต์ใน stylesheet)
+from ..paths import app_root
 
 # ---------- พื้นผิว ----------
 BG_CANVAS = "#111722"     # พื้นที่ผัง
@@ -39,6 +40,10 @@ SIGNAL_COLORS = {
 # Segoe UI ก่อน → ตัวเลขเป็นอารบิกเสมอ; ข้อความไทยจะ fallback ไป Leelawadee UI / Tahoma
 FONT_FAMILY = "'Segoe UI', 'Leelawadee UI', Tahoma"
 GRAD = f"qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {ACCENT2}, stop:1 {ACCENT})"
+
+
+def _asset(name: str) -> str:
+    return (app_root() / "assets" / name).as_posix()
 
 
 def make_qss(scale: float = 1.0) -> str:
@@ -96,7 +101,11 @@ QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit, QTextEdit, QText
     selection-background-color: {ACCENT};
 }}
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {{ border-color: {ACCENT2}; }}
-QComboBox::drop-down {{ border: none; width: 18px; }}
+QComboBox::drop-down {{ border: none; width: 24px; }}
+QComboBox::down-arrow {{ image: url("{_asset("arrow_down.png")}"); width: 13px; height: 13px; }}
+QComboBox::down-arrow:disabled {{ image: url("{_asset("arrow_down_off.png")}"); }}
+QComboBox:hover {{ border-color: {ACCENT2}; }}
+QComboBox QLineEdit {{ border: none; padding: 0; background: transparent; }}
 QComboBox QAbstractItemView {{ background: {BG_PANEL}; border: 1px solid {BORDER}; selection-background-color: {ACCENT}; }}
 
 /* ----- แถบไอคอน + แผงข้าง ----- */
@@ -137,6 +146,8 @@ QDockWidget::title {{ background: {BG_PANEL_DARK}; color: {TEXT_DIM}; padding: 4
 
 /* ----- พื้นที่ผัง ----- */
 QTabWidget#Space::pane {{ border: none; background: {BG_CANVAS}; }}
+QTabBar::tab {{ background: {BG_PANEL_DARK}; color: {TEXT_DIM}; padding: 6px 16px; border-radius: 8px; margin: 2px; }}
+QTabBar::tab:selected {{ background: {CARD_HI}; color: {ACCENT2}; font-weight: bold; }}
 QTabWidget#Space QTabBar::tab {{
     background: transparent; color: {TEXT_DIM}; padding: 2px 18px; margin: 2px 2px; border-radius: 10px;
 }}

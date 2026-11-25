@@ -25,6 +25,7 @@ class LevelWizard(QDialog):
         self.folder, self.existing, self.xy_base = Path(folder), existing, xy_base
         self.draft: E.LevelDraft | None = None
         self.rows, self.devices = [], []
+        self._auto_title = ""
         lay = QVBoxLayout(self)
 
         g1 = QGroupBox(tr("1  ผังอุปกรณ์"))
@@ -70,6 +71,7 @@ class LevelWizard(QDialog):
         lay.addWidget(self.lbl_err)
         bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         bb.button(QDialogButtonBox.Ok).setText(tr("สร้างด่าน"))
+        bb.button(QDialogButtonBox.Ok).setObjectName("Primary")
         bb.button(QDialogButtonBox.Cancel).setText(tr("ยกเลิก"))
         bb.accepted.connect(self.finish)
         bb.rejected.connect(self.reject)
@@ -106,6 +108,9 @@ class LevelWizard(QDialog):
         self.roles, self.params = {}, {}
         t = self.tpl
         self.lbl_help.setText(t.help)
+        if self.ed_title.text() == self._auto_title:          # ยังไม่ได้ตั้งเอง → ใช้ชื่อแม่แบบ กดสร้างได้เลย
+            self._auto_title = t.name
+            self.ed_title.setText(t.name)
         names = C.panel_names(self.rows)
         users = [a for a, _, _ in C.user_inputs(self.devices, self.xy_base)]
         pools = {"in": users + [r.address for r in self.rows if r.io == "in"],
